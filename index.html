@@ -1,0 +1,1679 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#b4432b">
+  <meta name="description" content="Kalorifer sistemi için ısı yükü, kombi gücü ve yıllık enerji tüketimi hesabı">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Isıtma Hesabı</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9Ijk2IiBmaWxsPSIjYjQ0MzJiIi8+CiAgPHBhdGggZD0iTTI1NiA5MiA5NiAyMjJ2MTk4aDMyMFYyMjJ6IiBmaWxsPSIjZmZmIi8+CiAgPGcgZmlsbD0iI2I0NDMyYiI+CiAgICA8cmVjdCB4PSIxNjAiIHk9IjI3MCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjExMCIgcng9IjEwIi8+CiAgICA8cmVjdCB4PSIyMDYiIHk9IjI3MCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjExMCIgcng9IjEwIi8+CiAgICA8cmVjdCB4PSIyNTIiIHk9IjI3MCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjExMCIgcng9IjEwIi8+CiAgICA8cmVjdCB4PSIyOTgiIHk9IjI3MCIgd2lkdGg9IjI4IiBoZWlnaHQ9IjExMCIgcng9IjEwIi8+CiAgICA8cmVjdCB4PSIxNDgiIHk9IjMwMCIgd2lkdGg9IjE5NiIgaGVpZ2h0PSIxNiIgcng9IjYiLz4KICAgIDxyZWN0IHg9IjE0OCIgeT0iMzQwIiB3aWR0aD0iMTk2IiBoZWlnaHQ9IjE2IiByeD0iNiIvPgogIDwvZz4KPC9zdmc+Cg==" type="image/svg+xml">
+  <style>
+:root {
+  --bg: #f6f3ef;
+  --surface: #ffffff;
+  --surface-2: #f3eee8;
+  --text: #1f1b18;
+  --muted: #6b625b;
+  --accent: #b4432b;
+  --accent-ink: #ffffff;
+  --accent-soft: #f7e4dd;
+  --bar: #c65a3f;
+  --bar-2: #3b6ea8;
+  --border: #e3dcd4;
+  --error: #a4161a;
+  --good: #2e7d4f;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #171412;
+    --surface: #221e1b;
+    --surface-2: #2b2622;
+    --text: #f1ebe5;
+    --muted: #a99f96;
+    --accent: #e8795d;
+    --accent-ink: #1b1411;
+    --accent-soft: #3a2721;
+    --bar: #e8795d;
+    --bar-2: #7fa8dc;
+    --border: #3a332e;
+    --error: #ff8a8a;
+    --good: #7fd19e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #171412; --surface: #221e1b; --surface-2: #2b2622; --text: #f1ebe5; --muted: #a99f96;
+  --accent: #e8795d; --accent-ink: #1b1411; --accent-soft: #3a2721; --bar: #e8795d; --bar-2: #7fa8dc;
+  --border: #3a332e; --error: #ff8a8a; --good: #7fd19e;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+button { font: inherit; color: inherit; }
+
+/* Header */
+.app-header { background: var(--accent); color: var(--accent-ink); }
+.header-inner > div { min-width: 0; }
+.header-inner {
+  max-width: 1180px; margin: 0 auto;
+  padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.app-header h1 { margin: 0; font-size: 1.35rem; }
+.app-header p { margin: 2px 0 0; opacity: .9; font-size: .88rem; }
+.toolbar { display: flex; gap: 6px; }
+.tool {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 52px; min-height: 48px; padding: 6px 8px;
+  background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3);
+  border-radius: 10px; color: var(--accent-ink); cursor: pointer; font-size: 1.05rem;
+}
+.tool span { font-size: .72rem; }
+.tool:hover { background: rgba(255,255,255,.24); }
+
+/* Layout */
+.layout { max-width: 1180px; margin: 0 auto; padding: 12px 16px; }
+@media (min-width: 960px) {
+  body { padding-bottom: 0; }
+  .layout { display: grid; grid-template-columns: 440px 1fr; gap: 20px; align-items: start; }
+  .col-inputs { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow-y: auto; padding-right: 4px; }
+  .sticky-bar, #btnCalc { display: none !important; }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card h2 { margin: 0 0 12px; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
+.step {
+  display: inline-grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: .85rem;
+}
+
+/* Fields */
+.field { margin-bottom: 14px; }
+.field > label, .label { display: block; font-size: .9rem; font-weight: 600; margin: 0 0 6px; }
+.hint + .label { margin-top: 16px; }
+.field input, .field select {
+  width: 100%; min-height: 48px; padding: 10px 12px; font-size: 1rem;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: var(--surface-2); color: var(--text);
+}
+.field input:focus, .field select:focus, .choice input:focus-visible + span,
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.with-unit { position: relative; flex: 1; }
+.with-unit input { padding-right: 52px; }
+.with-unit .unit {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: .9rem; pointer-events: none;
+}
+.hint { margin: 6px 0 0; font-size: .84rem; color: var(--muted); }
+
+.stepper { display: flex; gap: 8px; align-items: stretch; }
+.stepper input { text-align: center; font-size: 1.25rem; font-weight: 700; }
+.step-btn {
+  min-width: 52px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); font-size: 1.4rem; cursor: pointer;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chips button {
+  min-height: 36px; padding: 4px 14px; border-radius: 18px;
+  border: 1px solid var(--border); background: var(--surface); cursor: pointer; font-size: .88rem;
+}
+.chips button.active { background: var(--accent-soft); border-color: var(--accent); }
+
+/* Big choice buttons */
+.choice-grid { display: grid; gap: 8px; margin-bottom: 6px; }
+.choice-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.choice input { position: absolute; opacity: 0; pointer-events: none; }
+.choice span {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  min-height: 64px; padding: 8px 4px; text-align: center;
+  border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface-2);
+  cursor: pointer; user-select: none; height: 100%;
+}
+.choice i { font-style: normal; font-size: 1.3rem; }
+.choice b { font-size: .92rem; overflow-wrap: anywhere; }
+.choice small { font-size: .74rem; color: var(--muted); }
+.choice input:checked + span { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.choice input:checked + span small { color: var(--accent-ink); opacity: .85; }
+
+details summary { cursor: pointer; font-weight: 600; min-height: 32px; display: flex; align-items: center; }
+.adv-grid { display: grid; grid-template-columns: 1fr; gap: 0 14px; margin-top: 12px; }
+@media (min-width: 560px) and (max-width: 959px) { .adv-grid { grid-template-columns: 1fr 1fr; } }
+
+.primary-btn {
+  width: 100%; min-height: 54px; margin-bottom: 16px;
+  border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink);
+  font-size: 1.05rem; font-weight: 700; cursor: pointer;
+}
+
+/* Results */
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.kpi { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 10px; background: var(--surface-2); }
+.kpi.primary { grid-column: 1 / -1; background: var(--accent-soft); }
+.kpi-label { font-size: .8rem; color: var(--muted); }
+.kpi-value { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kpi.primary .kpi-value { font-size: 1.9rem; color: var(--accent); }
+.kpi-sub { font-size: .82rem; color: var(--muted); }
+.kpi-cost { font-size: 1rem; font-weight: 600; }
+.note { margin: 10px 0 0; font-size: .88rem; color: var(--muted); }
+.note.good { color: var(--good); }
+.error { color: var(--error); background: var(--surface); border: 1px solid var(--error); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; }
+.flash { animation: flash .9s ease; }
+@keyframes flash { 0% { box-shadow: 0 0 0 0 var(--accent); } 100% { box-shadow: 0 0 0 12px transparent; } }
+
+/* Horizontal bars (loss breakdown) */
+.hbars { display: grid; gap: 8px; }
+.hbar { display: grid; grid-template-columns: 112px minmax(0, 1fr) 52px; align-items: center; gap: 8px; font-size: .88rem; }
+.hbar-track { height: 14px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.hbar-fill { height: 100%; background: var(--bar); border-radius: 0 4px 4px 0; }
+.hbar-val { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+
+/* Vertical bars (monthly) */
+.vbars { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; align-items: end; height: 170px; padding-top: 18px; }
+.vbar { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.vbar-fill { width: 100%; max-width: 28px; background: var(--bar); border-radius: 4px 4px 0 0; min-height: 0; }
+.vbar-lbl { font-size: .7rem; color: var(--muted); margin-top: 4px; }
+.vbar-tip {
+  position: absolute; bottom: calc(100% + 2px); font-size: .7rem; white-space: nowrap;
+  background: var(--text); color: var(--bg); padding: 2px 6px; border-radius: 6px; opacity: 0; pointer-events: none;
+  transform: translateY(4px); transition: opacity .12s, transform .12s; z-index: 2;
+}
+.vbar:hover .vbar-tip, .vbar:focus .vbar-tip, .vbar.show .vbar-tip { opacity: 1; transform: none; }
+.vbar-top { position: absolute; top: -16px; font-size: .66rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.vbar-plot { position: relative; flex: 1; width: 100%; display: flex; align-items: flex-end; justify-content: center; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+th, td { padding: 7px 6px; border-bottom: 1px solid var(--border); text-align: right; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+td:not(:first-child) { white-space: nowrap; }
+th { font-size: .78rem; color: var(--muted); font-weight: 600; }
+tr.current td { background: var(--accent-soft); font-weight: 600; }
+td input {
+  width: 86px; min-height: 36px; padding: 4px 6px; text-align: right;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2); color: var(--text); font: inherit;
+}
+.table-toggle { margin-top: 10px; }
+
+/* Steps & sources */
+.steps, .sources { font-size: .9rem; overflow-wrap: anywhere; }
+.steps h3, .sources h3 { font-size: .95rem; margin: 16px 0 4px; }
+.eq {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .82rem;
+  background: var(--surface-2); border-radius: 8px; padding: 8px 10px; margin: 4px 0;
+  overflow-x: auto; white-space: pre;
+}
+.sources li { margin-bottom: 8px; }
+.sources a { color: var(--accent); }
+.footer-note { font-size: .8rem; color: var(--muted); padding: 0 4px 12px; }
+
+/* Sticky result bar (mobile) */
+.sticky-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--surface); border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+}
+.sb-label { display: block; font-size: .74rem; color: var(--muted); }
+.sb-value { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+.sticky-bar button {
+  min-height: 44px; padding: 0 16px; border: 0; border-radius: 10px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer;
+}
+
+.toast {
+  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%); z-index: 20;
+  background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: .9rem;
+}
+
+@media (max-width: 380px) {
+  .kpis { grid-template-columns: 1fr; }
+  .tool span { display: none; }
+  .hbar { grid-template-columns: 90px minmax(0, 1fr) 44px; }
+}
+
+/* Print / PDF report */
+@media print {
+  body { background: #fff; color: #000; padding: 0; font-size: 12px; }
+  .toolbar, .sticky-bar, #btnCalc, .step-btn, .chips, .toast, .hint { display: none !important; }
+  .app-header { background: none; color: #000; border-bottom: 2px solid #000; }
+  .layout { display: block; }
+  .col-inputs { position: static; max-height: none; overflow: visible; }
+  .card { break-inside: avoid; border-color: #bbb; }
+  details { display: block; }
+  details > summary { list-style: none; }
+  details:not([open]) > *:not(summary) { display: block; }
+  .choice input:not(:checked) + span { display: none; }
+  .choice-grid.three { grid-template-columns: 1fr; }
+}
+
+.js-warning {
+  margin: 12px max(16px, calc((100% - 1148px) / 2)) 0; padding: 12px 16px; border-radius: 10px;
+  background: var(--surface); border: 2px solid var(--error); color: var(--text); font-size: .95rem;
+}
+.tool.confirming { background: var(--error); border-color: var(--error); }
+
+/* Hot water additions */
+.switch { display: flex; align-items: flex-start; gap: 10px; margin: 4px 0 12px; cursor: pointer; font-size: .92rem; }
+.switch input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--accent); flex: none; }
+#hotWaterFields[hidden] { display: none; }
+.kpi-split { font-size: .84rem; color: var(--text); }
+.legend { display: flex; gap: 16px; font-size: .82rem; color: var(--muted); margin: -4px 0 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+.sw-heat { background: var(--bar); }
+.sw-dhw { background: var(--bar-2); }
+.vbar-stack { width: 100%; max-width: 28px; display: flex; flex-direction: column-reverse; gap: 2px; }
+.vbar-stack .vbar-fill { max-width: none; border-radius: 0; }
+.vbar-stack .vbar-fill:last-child { border-radius: 4px 4px 0 0; }
+.vbar-fill.dhw { background: var(--bar-2); }
+
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <div>
+        <h1>Isıtma Hesabı</h1>
+        <p>Kalorifer sistemi · kombi gücü ve yıllık enerji tüketimi</p>
+      </div>
+      <nav class="toolbar" aria-label="İşlemler">
+        <button type="button" id="btnPrint" class="tool" title="Raporu yazdır ya da PDF olarak kaydet">🖨️<span>Rapor</span></button>
+        <button type="button" id="btnShare" class="tool" title="Sonucu paylaş ya da kopyala">📤<span>Paylaş</span></button>
+        <button type="button" id="btnReset" class="tool" title="Tüm değerleri başlangıca döndür">↺<span>Sıfırla</span></button>
+      </nav>
+    </div>
+  </header>
+
+  <div id="jsWarning" class="js-warning" role="alert">
+    <b>Hesaplama çalışmıyor.</b> Bu dosya, program çalıştırmayan bir görüntüleyicide açılmış.
+    Telefonda dosyaya uzun basıp <b>Birlikte aç → Chrome</b> seçin; bilgisayarda Chrome ya da Edge ile açın.
+    <span id="jsWarningDetail"></span>
+  </div>
+
+  <div class="layout">
+    <form id="inputs" class="col-inputs" autocomplete="off" novalidate>
+
+      <section class="card">
+        <h2><span class="step">1</span> Evinizi tanıtın</h2>
+
+        <div class="field">
+          <label for="floorArea">Isıtılacak alan</label>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-target="floorArea" data-delta="-5" aria-label="5 m² azalt">−</button>
+            <div class="with-unit">
+              <input id="floorArea" type="number" inputmode="decimal" min="20" max="1000" step="1">
+              <span class="unit">m²</span>
+            </div>
+            <button type="button" class="step-btn" data-target="floorArea" data-delta="5" aria-label="5 m² artır">+</button>
+          </div>
+          <div class="chips" data-target="floorArea">
+            <button type="button" data-value="80">80</button>
+            <button type="button" data-value="100">100</button>
+            <button type="button" data-value="120">120</button>
+            <button type="button" data-value="150">150</button>
+            <button type="button" data-value="200">200</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="city">Bulunduğu il</label>
+          <select id="city"><option value="adana">Adana</option><option value="adiyaman">Adıyaman</option><option value="afyonkarahisar">Afyonkarahisar</option><option value="agri">Ağrı</option><option value="aksaray">Aksaray</option><option value="amasya">Amasya</option><option value="ankara">Ankara</option><option value="antalya">Antalya</option><option value="ardahan">Ardahan</option><option value="artvin">Artvin</option><option value="aydin">Aydın</option><option value="balikesir">Balıkesir</option><option value="bartin">Bartın</option><option value="batman">Batman</option><option value="bayburt">Bayburt</option><option value="bilecik">Bilecik</option><option value="bingol">Bingöl</option><option value="bitlis">Bitlis</option><option value="bolu">Bolu</option><option value="burdur">Burdur</option><option value="bursa">Bursa</option><option value="canakkale">Çanakkale</option><option value="cankiri">Çankırı</option><option value="corum">Çorum</option><option value="denizli">Denizli</option><option value="diyarbakir">Diyarbakır</option><option value="duzce">Düzce</option><option value="edirne">Edirne</option><option value="elazig">Elazığ</option><option value="erzincan">Erzincan</option><option value="erzurum">Erzurum</option><option value="eskisehir">Eskişehir</option><option value="gaziantep">Gaziantep</option><option value="giresun">Giresun</option><option value="gumushane">Gümüşhane</option><option value="hakkari">Hakkari</option><option value="hatay">Hatay</option><option value="igdir">Iğdır</option><option value="isparta">Isparta</option><option value="istanbul">İstanbul</option><option value="izmir">İzmir</option><option value="kahramanmaras">Kahramanmaraş</option><option value="karabuk">Karabük</option><option value="karaman">Karaman</option><option value="kars">Kars</option><option value="kastamonu">Kastamonu</option><option value="kayseri">Kayseri</option><option value="kirikkale">Kırıkkale</option><option value="kirklareli">Kırklareli</option><option value="kirsehir">Kırşehir</option><option value="kilis">Kilis</option><option value="kocaeli">Kocaeli</option><option value="konya">Konya</option><option value="kutahya">Kütahya</option><option value="malatya" selected>Malatya</option><option value="manisa">Manisa</option><option value="mardin">Mardin</option><option value="mersin">Mersin</option><option value="mugla">Muğla</option><option value="mus">Muş</option><option value="nevsehir">Nevşehir</option><option value="nigde">Niğde</option><option value="ordu">Ordu</option><option value="osmaniye">Osmaniye</option><option value="rize">Rize</option><option value="sakarya">Sakarya</option><option value="samsun">Samsun</option><option value="siirt">Siirt</option><option value="sinop">Sinop</option><option value="sivas">Sivas</option><option value="sanliurfa">Şanlıurfa</option><option value="sirnak">Şırnak</option><option value="tekirdag">Tekirdağ</option><option value="tokat">Tokat</option><option value="trabzon">Trabzon</option><option value="tunceli">Tunceli</option><option value="usak">Uşak</option><option value="van">Van</option><option value="yalova">Yalova</option><option value="yozgat">Yozgat</option><option value="zonguldak">Zonguldak</option></select>
+          <p class="hint" id="cityHint"></p>
+        </div>
+
+        <div class="field">
+          <label for="dwellingType">Konut tipi</label>
+          <select id="dwellingType"><option value="detached" selected>Müstakil ev (tek katlı)</option><option value="top">Apartman — en üst kat</option><option value="middle">Apartman — ara kat</option><option value="ground">Apartman — zemin kat</option></select>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">2</span> Yalıtım ve pencere</h2>
+        <p class="label">Yalıtım düzeyi</p>
+        <div class="choice-grid three" role="radiogroup" aria-label="Yalıtım düzeyi">
+          <label class="choice"><input type="radio" name="insulation" value="poor"><span><b>Zayıf</b><small>Yalıtım yok</small></span></label>
+          <label class="choice"><input type="radio" name="insulation" value="medium"><span><b>Orta</b><small>2008 standardı</small></span></label>
+          <label class="choice"><input type="radio" name="insulation" value="high"><span><b>Yüksek</b><small>Güncel standart</small></span></label>
+        </div>
+        <p class="hint" id="insulationHint"></p>
+
+        <p class="label">Pencere tipi</p>
+        <div class="choice-grid three" role="radiogroup" aria-label="Pencere tipi" id="windowChoices"></div>
+        <p class="hint" id="windowHint"></p>
+      </section>
+
+      <section class="card">
+        <h2><span class="step">3</span> Enerji kaynağı</h2>
+        <div class="choice-grid three" role="radiogroup" aria-label="Enerji kaynağı">
+          <label class="choice"><input type="radio" name="source" value="gas"><span><i aria-hidden="true">🔥</i><b>Doğalgaz</b></span></label>
+          <label class="choice"><input type="radio" name="source" value="electric"><span><i aria-hidden="true">⚡</i><b>Elektrik</b></span></label>
+          <label class="choice"><input type="radio" name="source" value="other"><span><i aria-hidden="true">⛽</i><b>Diğer yakıtlar</b></span></label>
+        </div>
+        <div class="field">
+          <label for="fuel">Cihaz / yakıt</label>
+          <select id="fuel"><option value="gas_condensing" selected>Doğalgaz — yoğuşmalı kombi / kazan</option><option value="gas_old">Doğalgaz — eski tip (yoğuşmasız) kombi</option></select>
+        </div>
+        <div class="field">
+          <label for="unitPrice" id="priceLabel">Birim fiyat (isteğe bağlı)</label>
+          <div class="with-unit">
+            <input id="unitPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Maliyet için girin">
+            <span class="unit" id="priceUnit">TL</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <details id="advanced">
+          <summary>⚙️ Gelişmiş ayarlar</summary>
+          <div class="adv-grid">
+            <div class="field">
+              <label for="height">Tavan yüksekliği</label>
+              <div class="with-unit"><input id="height" type="number" inputmode="decimal" min="2.2" max="5" step="0.05"><span class="unit">m</span></div>
+            </div>
+            <div class="field">
+              <label for="indoorTemp">İstenen oda sıcaklığı</label>
+              <div class="with-unit"><input id="indoorTemp" type="number" inputmode="decimal" min="16" max="24" step="0.5"><span class="unit">°C</span></div>
+            </div>
+            <div class="field">
+              <label for="exposedFacades">Dışarıya bakan cephe sayısı</label>
+              <select id="exposedFacades">
+                <option value="4">4 — her yönü açık</option>
+                <option value="3">3 — bir yanı bitişik</option>
+                <option value="2">2 — iki yanı bitişik</option>
+                <option value="1">1 — tek cephe</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="windowArea">Toplam pencere alanı</label>
+              <div class="with-unit"><input id="windowArea" type="number" inputmode="decimal" min="0" step="0.5"><span class="unit">m²</span></div>
+              <p class="hint">Boş bırakılırsa alanın %15'i alınır.</p>
+            </div>
+            <div class="field">
+              <label for="surroundings">Binanın çevresi (güneş alma)</label>
+              <select id="surroundings"><option value="open" selected>Açık: müstakil / 3 kata kadar binalar</option><option value="trees">Ağaçlı ya da 10 kata kadar binalar</option><option value="dense">Bitişik nizam / 10 kattan yüksek binalar</option></select>
+            </div>
+            <div class="field">
+              <label for="efficiency" id="efficiencyLabel">Sistem verimi</label>
+              <div class="with-unit"><input id="efficiency" type="number" inputmode="decimal" min="10" max="600" step="1"><span class="unit" id="efficiencyUnit">%</span></div>
+              <p class="hint" id="efficiencyHint"></p>
+            </div>
+            <div class="field">
+              <label for="radiatorRegime">Radyatör su sıcaklığı (gidiş/dönüş)</label>
+              <select id="radiatorRegime"><option value="90-70">90/70 °C (eski tip kazan)</option><option value="80-60">80/60 °C</option><option value="75-65" selected>75/65 °C (katalog koşulu)</option><option value="70-55">70/55 °C</option><option value="55-45">55/45 °C (düşük sıcaklık)</option><option value="45-35">45/35 °C (ısı pompası)</option></select>
+            </div>
+            <div class="field">
+              <label for="radiatorWPerM">Radyatör kataloğu: 1 metrenin gücü</label>
+              <div class="with-unit"><input id="radiatorWPerM" type="number" inputmode="decimal" min="0" step="10" placeholder="örn. katalogdan"><span class="unit">W/m</span></div>
+              <p class="hint">Girerseniz toplam radyatör uzunluğu hesaplanır.</p>
+            </div>
+            <div class="field">
+              <label for="radiatorExponent">Radyatör üssü n</label>
+              <input id="radiatorExponent" type="number" inputmode="decimal" min="1" max="1.6" step="0.01">
+            </div>
+            <div class="field">
+              <label for="safetyMargin">Kazan gücü emniyet payı</label>
+              <div class="with-unit"><input id="safetyMargin" type="number" inputmode="decimal" min="0" max="50" step="5"><span class="unit">%</span></div>
+            </div>
+            <div class="field">
+              <label for="insulationCost">Yalıtım yaptırma maliyeti</label>
+              <div class="with-unit"><input id="insulationCost" type="number" inputmode="decimal" min="0" step="1000" placeholder="geri ödeme için"><span class="unit">TL</span></div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <button type="button" id="btnCalc" class="primary-btn">Hesapla ve sonuca git</button>
+    </form>
+
+    <section class="col-results" id="results" aria-live="polite">
+      <div id="error" class="error" hidden></div>
+
+      <div class="card">
+        <h2>Sonuç</h2>
+        <div class="kpis">
+          <div class="kpi primary">
+            <span class="kpi-label">Yıllık tüketim</span>
+            <span class="kpi-value" id="outFuel">–</span>
+            <span class="kpi-sub" id="outDelivered"></span>
+            <span class="kpi-cost" id="outCost"></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Kombi / kazan gücü</span>
+            <span class="kpi-value" id="outLoad">–</span>
+            <span class="kpi-sub" id="outLoadSub"></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Evin yıllık ısı ihtiyacı</span>
+            <span class="kpi-value" id="outDemand">–</span>
+            <span class="kpi-sub" id="outSpecific"></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Toplam radyatör gücü</span>
+            <span class="kpi-value" id="outRadiator">–</span>
+            <span class="kpi-sub" id="outRadiatorSub"></span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Isı kaybı katsayısı</span>
+            <span class="kpi-value" id="outH">–</span>
+            <span class="kpi-sub">1 °C fark başına kayıp</span>
+          </div>
+        </div>
+        <p class="note" id="outLimit"></p>
+        <p class="note" id="outCarnot"></p>
+      </div>
+
+      <div class="card">
+        <h2>Isı nereden kaçıyor?</h2>
+        <div id="lossBars" class="hbars"></div>
+      </div>
+
+      <div class="card">
+        <h2>Aylık ısı ihtiyacı</h2>
+        <div id="monthChart" class="vbars" role="img"></div>
+        <details class="table-toggle"><summary>Tablo olarak göster</summary><div id="monthTable"></div></details>
+      </div>
+
+      <div class="card">
+        <h2>Yakıtları karşılaştır</h2>
+        <p class="hint">Aynı ev, aynı ısı ihtiyacı. Fiyat girerseniz yıllık maliyet de çıkar; fiyatlar bu cihazda hatırlanır.</p>
+        <div class="table-wrap" id="fuelTable"></div>
+      </div>
+
+      <div class="card">
+        <h2>Yalıtım yaptırırsam ne kazanırım?</h2>
+        <div class="table-wrap" id="insulationTable"></div>
+        <p class="note" id="upgradeNote"></p>
+      </div>
+
+      <div class="card">
+        <details>
+          <summary>📐 Hesap nasıl yapıldı? (formüller)</summary>
+          <div id="steps" class="steps"></div>
+        </details>
+      </div>
+
+      <div class="card">
+        <details>
+          <summary>📚 Varsayımlar ve kaynaklar</summary>
+          <div id="sources" class="sources"></div>
+        </details>
+      </div>
+
+      <p class="footer-note">Sonuçlar TS 825 aylık yöntemi ve kararlı rejim ısı kaybı hesabına dayanan mühendislik tahminidir.
+        Proje aşamasında oda oda ısı kaybı hesabı yapılmalıdır. <span id="version"></span></p>
+    </section>
+  </div>
+
+  <div class="sticky-bar" id="stickyBar">
+    <div>
+      <span class="sb-label">Yıllık tüketim</span>
+      <span class="sb-value" id="sbValue">–</span>
+    </div>
+    <button type="button" id="btnGoResults">Sonucu gör ↓</button>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script>
+/*
+ * data.js — Constants and tabulated data for heatcalc.js.
+ *
+ * RULE: no number enters this file without an opened source. Each value is
+ * tagged with a source id (see `sources` at the bottom). Values marked
+ * "assumption" are user-editable design assumptions, not facts.
+ * Source research: 03-Çalışma/Kaynaklar-ve-Formuller.md
+ */
+window.HEAT_DATA = {
+  version: '1.3 (2026-09-30) — 81 il',
+
+  constants: {
+    airHeatCapacity: 0.33,     // ρc of air, Wh/(m³K) — S1 p.26 (1.184·1006/3600)
+    netVolumeFactor: 0.8,      // V_h = 0.8 V_gross — S1 p.26
+    usableAreaFactor: 0.32,    // A_n = 0.32 V_gross — S1 eq.16
+    internalGainPerM2: 5,      // W/m² A_n, dwellings — S1 §2.2.1.2
+    frameFactor: 0.8,          // F_w — S1 worked example (F_w = 0.8 fixed)
+    kcalPerWh: 0.86,           // 1 kWh = 860 kcal — S6 Ek-2
+  },
+
+  assumptions: {
+    windowToFloorRatio: 0.15,  // assumption: window area = 15 % of floor area (user-editable)
+  },
+
+  // Monthly mean outdoor temperature by TS 825 (2008) zone, Jan..Dec [°C] — S1 Ek B.2
+  monthlyOutdoorTemp: {
+    1: [8.4, 9.0, 11.6, 15.8, 21.2, 26.3, 28.7, 27.6, 23.5, 18.5, 13.0, 9.3],
+    2: [2.9, 4.4, 7.3, 12.8, 18.0, 22.5, 24.9, 24.3, 19.9, 14.1, 8.5, 3.8],
+    3: [-0.3, 0.1, 4.1, 10.1, 14.4, 18.5, 21.7, 21.2, 17.2, 11.6, 5.6, 1.3],
+    4: [-5.4, -4.7, 0.3, 7.9, 12.8, 17.3, 21.4, 21.1, 16.5, 10.3, 3.1, -2.8],
+  },
+
+  // Monthly mean solar irradiance on vertical surfaces, Jan..Dec [W/m²] — S1 Ek C
+  solarIrradiance: {
+    south:    [72, 84, 87, 90, 92, 95, 93, 93, 89, 82, 67, 64],
+    north:    [26, 37, 52, 66, 79, 83, 81, 73, 57, 40, 27, 22],
+    eastWest: [43, 57, 77, 90, 114, 122, 118, 106, 81, 59, 41, 37],
+  },
+
+  // 81 provinces. zone2008: S1 Ek D · zone2024: S16 (province list; the standard itself zones by district)
+  // designTemp: S4 Tablo 4 · hdd: MGM heating degree-days, mean of 2023–2025 (base 18 °C) — S3
+  // MGM stations differing from the province name: Hatay=Antakya, Afyonkarahisar=Afyon,
+  // Karabük=Karabük/Kapullu, İstanbul=İstanbul Bölge/Kartal
+  cities: [
+    { id: 'adana', label: 'Adana', plate: 1, zone2008: 1, zone2024: 1, designTemp: 0, hdd: 630 },
+    { id: 'adiyaman', label: 'Adıyaman', plate: 2, zone2008: 2, zone2024: 2, designTemp: -9, hdd: 1351 },
+    { id: 'afyonkarahisar', label: 'Afyonkarahisar', plate: 3, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2262 },
+    { id: 'agri', label: 'Ağrı', plate: 4, zone2008: 4, zone2024: 6, designTemp: -24, hdd: 3545 },
+    { id: 'aksaray', label: 'Aksaray', plate: 68, zone2008: 3, zone2024: 4, designTemp: -15, hdd: 2083 },
+    { id: 'amasya', label: 'Amasya', plate: 5, zone2008: 2, zone2024: 4, designTemp: -12, hdd: 1799 },
+    { id: 'ankara', label: 'Ankara', plate: 6, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2043 },
+    { id: 'antalya', label: 'Antalya', plate: 7, zone2008: 1, zone2024: 1, designTemp: 3, hdd: 661 },
+    { id: 'ardahan', label: 'Ardahan', plate: 75, zone2008: 4, zone2024: 6, designTemp: -21, hdd: 4622 },
+    { id: 'artvin', label: 'Artvin', plate: 8, zone2008: 3, zone2024: 4, designTemp: -9, hdd: 2086 },
+    { id: 'aydin', label: 'Aydın', plate: 9, zone2008: 1, zone2024: 2, designTemp: -3, hdd: 858 },
+    { id: 'balikesir', label: 'Balıkesir', plate: 10, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1651 },
+    { id: 'bartin', label: 'Bartın', plate: 74, zone2008: 2, zone2024: 4, designTemp: -3, hdd: 1735 },
+    { id: 'batman', label: 'Batman', plate: 72, zone2008: 2, zone2024: 2, designTemp: -9, hdd: 1688 },
+    { id: 'bayburt', label: 'Bayburt', plate: 69, zone2008: 4, zone2024: 5, designTemp: -15, hdd: 3570 },
+    { id: 'bilecik', label: 'Bilecik', plate: 11, zone2008: 3, zone2024: 4, designTemp: -9, hdd: 1950 },
+    { id: 'bingol', label: 'Bingöl', plate: 12, zone2008: 3, zone2024: 4, designTemp: -18, hdd: 2370 },
+    { id: 'bitlis', label: 'Bitlis', plate: 13, zone2008: 4, zone2024: 5, designTemp: -15, hdd: 3329 },
+    { id: 'bolu', label: 'Bolu', plate: 14, zone2008: 3, zone2024: 4, designTemp: -15, hdd: 2393 },
+    { id: 'burdur', label: 'Burdur', plate: 15, zone2008: 3, zone2024: 4, designTemp: -9, hdd: 1814 },
+    { id: 'bursa', label: 'Bursa', plate: 16, zone2008: 2, zone2024: 3, designTemp: -6, hdd: 1445 },
+    { id: 'canakkale', label: 'Çanakkale', plate: 17, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1183 },
+    { id: 'cankiri', label: 'Çankırı', plate: 18, zone2008: 3, zone2024: 4, designTemp: -15, hdd: 2202 },
+    { id: 'corum', label: 'Çorum', plate: 19, zone2008: 3, zone2024: 4, designTemp: -15, hdd: 2333 },
+    { id: 'denizli', label: 'Denizli', plate: 20, zone2008: 2, zone2024: 2, designTemp: -6, hdd: 1141 },
+    { id: 'diyarbakir', label: 'Diyarbakır', plate: 21, zone2008: 2, zone2024: 4, designTemp: -9, hdd: 1768 },
+    { id: 'duzce', label: 'Düzce', plate: 81, zone2008: 2, zone2024: 4, designTemp: -9, hdd: 1635 },
+    { id: 'edirne', label: 'Edirne', plate: 22, zone2008: 2, zone2024: 4, designTemp: -9, hdd: 1563 },
+    { id: 'elazig', label: 'Elazığ', plate: 23, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2146 },
+    { id: 'erzincan', label: 'Erzincan', plate: 24, zone2008: 4, zone2024: 4, designTemp: -18, hdd: 2641 },
+    { id: 'erzurum', label: 'Erzurum', plate: 25, zone2008: 4, zone2024: 6, designTemp: -21, hdd: 4216 },
+    { id: 'eskisehir', label: 'Eskişehir', plate: 26, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2182 },
+    { id: 'gaziantep', label: 'Gaziantep', plate: 27, zone2008: 2, zone2024: 2, designTemp: -9, hdd: 1534 },
+    { id: 'giresun', label: 'Giresun', plate: 28, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1249 },
+    { id: 'gumushane', label: 'Gümüşhane', plate: 29, zone2008: 4, zone2024: 5, designTemp: -12, hdd: 2761 },
+    { id: 'hakkari', label: 'Hakkari', plate: 30, zone2008: 4, zone2024: 5, designTemp: -24, hdd: 2805 },
+    { id: 'hatay', label: 'Hatay', plate: 31, zone2008: 1, zone2024: 2, designTemp: 0, hdd: 927 },
+    { id: 'igdir', label: 'Iğdır', plate: 76, zone2008: 3, zone2024: 4, designTemp: -18, hdd: 2233 },
+    { id: 'isparta', label: 'Isparta', plate: 32, zone2008: 3, zone2024: 4, designTemp: -9, hdd: 1776 },
+    { id: 'istanbul', label: 'İstanbul', plate: 34, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1231 },
+    { id: 'izmir', label: 'İzmir', plate: 35, zone2008: 1, zone2024: 2, designTemp: 0, hdd: 821 },
+    { id: 'kahramanmaras', label: 'Kahramanmaraş', plate: 46, zone2008: 2, zone2024: 2, designTemp: -9, hdd: 1311 },
+    { id: 'karabuk', label: 'Karabük', plate: 78, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2063 },
+    { id: 'karaman', label: 'Karaman', plate: 70, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2059 },
+    { id: 'kars', label: 'Kars', plate: 36, zone2008: 4, zone2024: 6, designTemp: -27, hdd: 4083 },
+    { id: 'kastamonu', label: 'Kastamonu', plate: 37, zone2008: 4, zone2024: 5, designTemp: -12, hdd: 2632 },
+    { id: 'kayseri', label: 'Kayseri', plate: 38, zone2008: 4, zone2024: 4, designTemp: -15, hdd: 2532 },
+    { id: 'kirikkale', label: 'Kırıkkale', plate: 71, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 1973 },
+    { id: 'kirklareli', label: 'Kırklareli', plate: 39, zone2008: 3, zone2024: 4, designTemp: -9, hdd: 1743 },
+    { id: 'kirsehir', label: 'Kırşehir', plate: 40, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2423 },
+    { id: 'kilis', label: 'Kilis', plate: 79, zone2008: 2, zone2024: 2, designTemp: -6, hdd: 1141 },
+    { id: 'kocaeli', label: 'Kocaeli', plate: 41, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1198 },
+    { id: 'konya', label: 'Konya', plate: 42, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2265 },
+    { id: 'kutahya', label: 'Kütahya', plate: 43, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2344 },
+    { id: 'malatya', label: 'Malatya', plate: 44, zone2008: 3, zone2024: 4, designTemp: -12, hdd: 2044 },
+    { id: 'manisa', label: 'Manisa', plate: 45, zone2008: 2, zone2024: 2, designTemp: -3, hdd: 1146 },
+    { id: 'mardin', label: 'Mardin', plate: 47, zone2008: 2, zone2024: 2, designTemp: -6, hdd: 1577 },
+    { id: 'mersin', label: 'Mersin', plate: 33, zone2008: 1, zone2024: 1, designTemp: 3, hdd: 409 },
+    { id: 'mugla', label: 'Muğla', plate: 48, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1564 },
+    { id: 'mus', label: 'Muş', plate: 49, zone2008: 4, zone2024: 5, designTemp: -18, hdd: 2873 },
+    { id: 'nevsehir', label: 'Nevşehir', plate: 50, zone2008: 3, zone2024: 4, designTemp: -15, hdd: 2403 },
+    { id: 'nigde', label: 'Niğde', plate: 51, zone2008: 3, zone2024: 4, designTemp: -15, hdd: 2349 },
+    { id: 'ordu', label: 'Ordu', plate: 52, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1323 },
+    { id: 'osmaniye', label: 'Osmaniye', plate: 80, zone2008: 1, zone2024: 2, designTemp: -3, hdd: 762 },
+    { id: 'rize', label: 'Rize', plate: 53, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1415 },
+    { id: 'sakarya', label: 'Sakarya', plate: 54, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1317 },
+    { id: 'samsun', label: 'Samsun', plate: 55, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1295 },
+    { id: 'siirt', label: 'Siirt', plate: 56, zone2008: 2, zone2024: 2, designTemp: -9, hdd: 1574 },
+    { id: 'sinop', label: 'Sinop', plate: 57, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1243 },
+    { id: 'sivas', label: 'Sivas', plate: 58, zone2008: 4, zone2024: 5, designTemp: -18, hdd: 2869 },
+    { id: 'sanliurfa', label: 'Şanlıurfa', plate: 63, zone2008: 2, zone2024: 2, designTemp: -6, hdd: 1104 },
+    { id: 'sirnak', label: 'Şırnak', plate: 73, zone2008: 2, zone2024: 4, designTemp: -6, hdd: 1661 },
+    { id: 'tekirdag', label: 'Tekirdağ', plate: 59, zone2008: 2, zone2024: 3, designTemp: -6, hdd: 1492 },
+    { id: 'tokat', label: 'Tokat', plate: 60, zone2008: 3, zone2024: 4, designTemp: -15, hdd: 2001 },
+    { id: 'trabzon', label: 'Trabzon', plate: 61, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1258 },
+    { id: 'tunceli', label: 'Tunceli', plate: 62, zone2008: 3, zone2024: 4, designTemp: -18, hdd: 2327 },
+    { id: 'usak', label: 'Uşak', plate: 64, zone2008: 3, zone2024: 4, designTemp: -9, hdd: 2002 },
+    { id: 'van', label: 'Van', plate: 65, zone2008: 4, zone2024: 5, designTemp: -15, hdd: 2866 },
+    { id: 'yalova', label: 'Yalova', plate: 77, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1272 },
+    { id: 'yozgat', label: 'Yozgat', plate: 66, zone2008: 4, zone2024: 5, designTemp: -15, hdd: 2837 },
+    { id: 'zonguldak', label: 'Zonguldak', plate: 67, zone2008: 2, zone2024: 3, designTemp: -3, hdd: 1525 },
+  ],
+
+  uValues: {
+    // Uninsulated existing house — S5 Tablo 5 (area-weighted brick 1.542 & RC 3.206 wall; floors 0.751 & 1.626)
+    poor: { wall: 2.144, roof: 3.492, floor: 1.191, basis: 'Yalıtımsız mevcut bina (Usta 2009)' },
+    // TS 825 (2008) maximum U, by 2008 zone — S1 Ek A.3
+    ts825_2008: {
+      1: { wall: 0.70, roof: 0.45, floor: 0.70 },
+      2: { wall: 0.60, roof: 0.40, floor: 0.60 },
+      3: { wall: 0.50, roof: 0.30, floor: 0.45 },
+      4: { wall: 0.40, roof: 0.25, floor: 0.40 },
+    },
+    // TS 825:2024 recommended U, by 2024 zone — S2 slide 17
+    ts825_2024: {
+      1: { wall: 0.45, roof: 0.35, floor: 0.40 },
+      2: { wall: 0.40, roof: 0.30, floor: 0.35 },
+      3: { wall: 0.40, roof: 0.30, floor: 0.35 },
+      4: { wall: 0.35, roof: 0.25, floor: 0.30 },
+      5: { wall: 0.25, roof: 0.20, floor: 0.25 },
+      6: { wall: 0.25, roof: 0.20, floor: 0.25 },
+    },
+  },
+
+  insulationLevels: {
+    poor:   { label: 'Zayıf',  hint: 'Yalıtımsız eski bina: tuğla duvar ve betonarme, çatı ve döşeme yalıtımı yok.' },
+    medium: { label: 'Orta',   hint: '2008–2025 arası yönetmeliğe uygun yalıtım (TS 825 2008 sınır değerleri).' },
+    high:   { label: 'Yüksek', hint: 'Güncel standarda uygun güçlü yalıtım: kalın mantolama, yalıtımlı çatı (TS 825:2024).' },
+  },
+
+  // U: S1 Ek A.4 · g⊥: S1 Çizelge 6 · airChange: S5 p.5 (2 / 1 h⁻¹), S1 p.26 (0.8 h⁻¹)
+  windowTypes: [
+    { id: 'single', label: 'Tek cam (eski ahşap doğrama)', u: 4.9, gPerp: 0.85, airChange: 2.0,
+      hint: 'Belgesiz, hava sızdıran eski pencere.' },
+    { id: 'double', label: 'Çift cam / ısıcam (PVC)',      u: 2.7, gPerp: 0.75, airChange: 1.0,
+      hint: 'Kaplamasız çift cam, 16 mm ara boşluk.' },
+    { id: 'lowe',   label: 'Low-E kaplamalı ısıcam (PVC)', u: 1.9, gPerp: 0.50, airChange: 0.8,
+      hint: 'Isı yalıtımlı, kaplamalı çift cam.' },
+  ],
+
+  // bRoof / bFloor: TS 825 eq.11 factors (0.8 ceiling under roof, 0.5 ground floor) — S1 p.25
+  dwellingTypes: [
+    { id: 'detached', label: 'Müstakil ev (tek katlı)',  bRoof: 0.8, bFloor: 0.5, facades: 4, limitType: 'detached' },
+    { id: 'top',      label: 'Apartman — en üst kat',    bRoof: 0.8, bFloor: 0,   facades: 2, limitType: 'apartment' },
+    { id: 'middle',   label: 'Apartman — ara kat',       bRoof: 0,   bFloor: 0,   facades: 2, limitType: 'apartment' },
+    { id: 'ground',   label: 'Apartman — zemin kat',     bRoof: 0,   bFloor: 0.5, facades: 2, limitType: 'apartment' },
+  ],
+
+  // Shading factor r — S1 Çizelge 5
+  surroundings: [
+    { id: 'open',  label: 'Açık: müstakil / 3 kata kadar binalar', r: 0.8 },
+    { id: 'trees', label: 'Ağaçlı ya da 10 kata kadar binalar',    r: 0.6 },
+    { id: 'dense', label: 'Bitişik nizam / 10 kattan yüksek binalar', r: 0.5 },
+  ],
+
+  /*
+   * Fuels. kWhPerUnit = heating value per sold unit.
+   *   Natural gas: 9155 kcal/m³ gross (billing reference) / 860.42 — S7
+   *   Others: net heating values of S6 Ek-2 / 860 (Ek-2 repealed 2022; values historical-official)
+   *   Pellet: ≥16.5 MJ/kg (ENplus A1 / ISO 17225-2 threshold) / 3.6 — S11
+   * efficiency (seasonal, legal minimum for new appliances unless noted):
+   *   gas / liquid-fuel boilers 0.86 — S8 · old gas boiler 0.80 — S10
+   *   solid-fuel boilers 0.75 — S9 · heat pump SCOP 2.75 ≈ 110 % × CC 2.5 — S8
+   *   electric resistance 1.0 — 1st law: all electrical work becomes heat in the room
+   */
+  fuels: [
+    { id: 'gas_condensing', group: 'gas', isCombi: true, label: 'Doğalgaz — yoğuşmalı kombi / kazan', unit: 'm³', unitDigits: 0, kWhPerUnit: 10.640, efficiency: 0.86 },
+    { id: 'gas_old',        group: 'gas', isCombi: true, label: 'Doğalgaz — eski tip (yoğuşmasız) kombi', unit: 'm³', unitDigits: 0, kWhPerUnit: 10.640, efficiency: 0.80 },
+    { id: 'heat_pump',      group: 'electric', label: 'Isı pompası (havadan suya)', unit: 'kWh', unitDigits: 0, kWhPerUnit: 1, efficiency: 2.75, isHeatPump: true },
+    { id: 'electric',       group: 'electric', label: 'Elektrikli kazan / rezistanslı ısıtıcı', unit: 'kWh', unitDigits: 0, kWhPerUnit: 1, efficiency: 1.0 },
+    { id: 'coal',           group: 'other', label: 'İthal kömür / taşkömürü', unit: 'kg', unitDigits: 0, kWhPerUnit: 7.093, efficiency: 0.75 },
+    { id: 'lignite',        group: 'other', label: 'Yerli linyit', unit: 'kg', unitDigits: 0, kWhPerUnit: 3.488, efficiency: 0.75 },
+    { id: 'fuel_oil',       group: 'other', label: 'Kalorifer yakıtı (fuel-oil no.4)', unit: 'kg', unitDigits: 0, kWhPerUnit: 11.163, efficiency: 0.86 },
+    { id: 'diesel',         group: 'other', label: 'Motorin (mazot)', unit: 'L', unitDigits: 0, kWhPerUnit: 9.844, efficiency: 0.86 },
+    { id: 'lpg',            group: 'other', label: 'LPG', unit: 'kg', unitDigits: 0, kWhPerUnit: 12.674, efficiency: 0.86 },
+    { id: 'pellet',         group: 'other', label: 'Odun peleti', unit: 'kg', unitDigits: 0, kWhPerUnit: 4.583, efficiency: 0.75 },
+    { id: 'wood',           group: 'other', label: 'Odun', unit: 'kg', unitDigits: 0, kWhPerUnit: 3.488, efficiency: 0.75 },
+  ],
+
+  /*
+   * Domestic hot water — INACTIVE since v1.3 (hot-water section removed at the owner's request, 2026-09-30).
+   * Kept for a possible return; sources in 03-Çalışma/Kaynaklar-ve-Formuller.md (SAP 10.2 App. J etc.).
+   * coldWater: monthly mains inlet temperature by climate region, Jan..Dec [°C] — S17 Table 5
+   *   (region 1 Antalya, 2 İstanbul, 3 Ankara, 4 Erzurum; the paper's four regions are matched
+   *   to the four TS 825 (2008) zones — assumption, the representative cities coincide with Ek D).
+   */
+  hotWater: {
+    coldWater: {
+      1: [13.8, 12.7, 13.9, 16.1, 19.5, 23.5, 26.8, 28.5, 27.8, 25.2, 21.5, 17.0],
+      2: [10.2, 9.0, 9.5, 11.8, 15.4, 19.2, 21.9, 22.9, 22.4, 19.8, 16.9, 13.2],
+      3: [8.2, 6.6, 7.8, 10.7, 14.5, 18.0, 20.9, 22.8, 21.6, 18.1, 14.6, 10.9],
+      4: [2.7, 1.5, 1.1, 3.2, 7.5, 11.8, 14.8, 16.8, 16.1, 12.5, 8.5, 5.3],
+    },
+    daysInMonth: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    monthlyFactor:   [1.10, 1.06, 1.02, 0.98, 0.94, 0.90, 0.90, 0.94, 0.98, 1.02, 1.06, 1.10],        // Table J2
+    behaviourFactor: [1.035, 1.021, 1.007, 0.993, 0.979, 0.965, 0.965, 0.979, 0.993, 1.007, 1.021, 1.035], // Table J5
+    showerTemp: 41,          // mixed shower water °C — (J3)
+    bathTemp: 42,            // mixed bath water °C — (J8)
+    hotTemp: 52,             // hot supply °C — (J3), (J14)
+    bathVolume: 73,          // L per bath — (J7)
+    specificHeat: 4.18,      // kJ/(kg·K), 1 L = 1 kg, as used in SAP (J14)
+    specificHeatInstant: 4.186, // kJ/(kg·K), water at 15 °C — S18
+    distributionLoss: 0.15,  // × energy content, non-point-of-use systems — Appendix J step 7
+    combiLossPerYear: 600,   // kWh/yr × f_u, instantaneous combi without keep-hot — Table 3a
+    defaultShowerFlow: 11,   // L/min, combi or unvented — Table J4
+    defaultShowerMinutes: 6, // min per shower — Appendix J step 1
+    kitchenTapFlow: 6,       // L/min, EU Ecolabel kitchen tap maximum — S19
+    designColdTemp: 10,      // °C design inlet — S20 (ÇŞB §2.3.2.4); EU test basis 10 °C
+    defaultUseTemp: 41,      // °C at the shower — (J3)
+  },
+
+  // EN 442: rated output at ΔT = 50 K — S12; exponent 1.32 from a tested model — S13
+  radiator: { nominalDelta: 50, defaultExponent: 1.32 },
+  radiatorRegimes: [
+    { id: '90-70', flow: 90, ret: 70, label: '90/70 °C (eski tip kazan)' },
+    { id: '80-60', flow: 80, ret: 60, label: '80/60 °C' },
+    { id: '75-65', flow: 75, ret: 65, label: '75/65 °C (katalog koşulu)' },
+    { id: '70-55', flow: 70, ret: 55, label: '70/55 °C' },
+    { id: '55-45', flow: 55, ret: 45, label: '55/45 °C (düşük sıcaklık)' },
+    { id: '45-35', flow: 45, ret: 35, label: '45/35 °C (ısı pompası)' },
+  ],
+
+  // TS 825:2024 allowed net heating+cooling need [kWh/m²·yr], zones 1..6 — S2 slide 20
+  energyLimits2024: {
+    detached:  [80, 80, 80, 80, 85, 90],
+    apartment: [70, 70, 70, 70, 75, 80],
+  },
+
+  defaults: {
+    floorArea: 100, height: 2.7, cityId: 'malatya', dwellingType: 'detached',
+    insulation: 'medium', windowType: 'double', surroundings: 'open',
+    indoorTemp: 20, source: 'gas', fuelId: 'gas_condensing',
+    radiatorRegime: '75-65', safetyMargin: 0,
+    includeHotWater: false, bathroom: 'shower', solarFraction: 0, kitchenSimultaneous: false,
+  },
+  defaultWindowFor: { poor: 'single', medium: 'double', high: 'lowe' },
+
+  assumptionNotes: [
+    'Ev kare planlı kabul edilir; duvar alanı = çevre × tavan yüksekliği × (dış cephe sayısı / 4).',
+    'Pencere alanı girilmezse taban alanının %15\'i alınır (varsayım; değiştirilebilir).',
+    'Pencereler güney, kuzey, doğu ve batıya eşit dağılmış kabul edilir.',
+    'Isı köprüleri, kapılar ve kullanım sıcak suyu (banyo, mutfak) bu sürümde hesaba katılmaz.',
+    'Yıllık ihtiyaç TS 825 (2008) aylık yöntemiyle, iklim bölgesinin aylık ortalama sıcaklıklarıyla bulunur; il bazında değil bölge bazındadır. İlçeler bulunduğu ilin değerini alır.',
+    'Yakıt verimleri yeni cihazlar için AB\'nin izin verdiği en düşük mevsimsel verimlerdir; eski soba ve kazanlarda tüketim daha yüksek olur. Verim "Gelişmiş ayarlar"dan değiştirilebilir.',
+    'Kazan verimleri üst ısıl değere, doğalgaz dışındaki yakıtların ısıl değerleri alt ısıl değere göredir; bu fark sıvı ve katı yakıtlarda miktarı birkaç yüzde düşük gösterebilir.',
+    'Tasarım dış sıcaklıkları 1966\'dan beri kullanılan değerlerdir; son 40 yılın iklimine göre 5–10 K daha soğuktur (S4). Kazan gücü bu yüzden güvenli taraftadır.',
+    'Kontrol amaçlı MGM derece-gün hesabı ilin son üç yılının gerçek iklimini kullanır (18 °C taban, kazançlar düşülmez); TS 825 ise bölgenin standart aylık sıcaklıklarını ve seçilen oda sıcaklığını kullanır. İkisi arasında fark olması normaldir.',
+  ],
+
+  sources: [
+    { id: 'S1', citation: 'İZOCAM, Açıklamalı ve Örneklerle TS 825 Binalarda Isı Yalıtım Kuralları (TS 825:2008 metni ve ekleri), Ocak 2013.',
+      url: 'https://birimler.dpu.edu.tr/app/views/panel/ckfinder/userfiles/74/files/oerbas/ts_825.pdf',
+      usedFor: 'H_T, H_V formülleri; aylık yöntem; iç kazanç 5 W/m²; F_w, g⊥, gölgelenme; Ek A.3, A.4, B.2, C, D.' },
+    { id: 'S2', citation: 'T. Diz, Yeni TS 825 Standardı ve Sektörümüze Etkileri (sunum), İZODER, 2025. [TS 825:2024 metninin özeti]',
+      url: 'https://www.izoder.org.tr/dosyalar/IZODER%20TS%20825%20Sektorel%20Bilgilendirme.pdf',
+      usedFor: 'TS 825:2024 U değerleri, 6 iklim bölgesi haritası, enerji sınırları.' },
+    { id: 'S3', citation: 'T.C. Meteoroloji Genel Müdürlüğü, Isıtma ve Soğutma Gün Dereceleri, yıllık tablolar 2023–2025.',
+      url: 'https://www.mgm.gov.tr/veridegerlendirme/gun-derece.aspx',
+      usedFor: 'İllerin ısıtma derece-gün değerleri (18 °C taban).' },
+    { id: 'S4', citation: 'H. Bulgurcu, N. Koçyiğit, Türkiye\'deki Tüm İl ve İlçeler için Yeni Ortalama Aylık İklim Verileri, Tesisat Mühendisliği 202 (2024) 19–31, Tablo 4.',
+      url: 'https://www.iklimsoft.com/public-uploads/QS4RNe8lk0.090924.200847.pdf',
+      usedFor: 'İllerin kış tasarım dış sıcaklıkları.' },
+    { id: 'S5', citation: 'S. Usta, TS 825 Standardına Göre İkinci Bölgede Bulunan Bir Binanın Yalıtımsız ve Yalıtımlı Durumlarının Karşılaştırılması, Yapı Teknolojileri Elektronik Dergisi 5(1) (2009) 1–24.',
+      url: 'https://dergipark.org.tr/tr/download/article-file/206886',
+      usedFor: 'Yalıtımsız bina U değerleri; hava değişim sayısı 2 ve 1 h⁻¹.' },
+    { id: 'S6', citation: 'Enerji Kaynaklarının ve Enerjinin Kullanımında Verimliliğin Artırılmasına Dair Yönetmelik, Ek-2, Resmî Gazete 27.10.2011, sayı 28097 (Ek-2, RG 06.07.2022 sayı 31888 ile yürürlükten kaldırıldı).',
+      url: 'https://www.resmigazete.gov.tr/eskiler/2011/10/20111027-5.htm',
+      usedFor: 'Kömür, linyit, odun, fuel-oil, motorin, LPG ısıl değerleri; 1 kWh = 860 kcal.' },
+    { id: 'S7', citation: 'Kırgaz, Faturalandırma Parametreleri (standart üst ısıl değer 9155 kcal/m³); Palgaz, Faturalandırma (kWh dönüşümü).',
+      url: 'https://www.kirgaz.com.tr/dogalgaz/faturalandirma-parametreleri',
+      usedFor: 'Doğalgaz: 1 m³ ≈ 10,64 kWh (faturadaki gibi).' },
+    { id: 'S8', citation: 'Commission Regulation (EU) No 813/2013, Annex II (ecodesign — space heaters).',
+      url: 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32013R0813',
+      usedFor: 'Gaz/sıvı yakıtlı kazan mevsimsel verimi ≥ %86; ısı pompası ≥ %110 (SCOP ≈ 2,75).' },
+    { id: 'S9', citation: 'Commission Regulation (EU) 2015/1189, Annex II (ecodesign — solid fuel boilers).',
+      url: 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32015R1189',
+      usedFor: 'Katı yakıtlı kazan mevsimsel verimi ≥ %75 (≤ 20 kW).' },
+    { id: 'S10', citation: 'Ecofys / İZODER, Türkiye için U-Değerleri Haritaları, 24.08.2016, Ek 3.',
+      url: 'https://www.izoder.org.tr/dosyalar/haberler/Turkiye-U-degerleri-haritasi-raporu-2016-Turkce.pdf',
+      usedFor: 'Mevcut (eski) gaz kazanı verimi %80.' },
+    { id: 'S11', citation: 'R. Mack ve ark., Biomass Conversion and Biorefinery 15 (2025) 17155–17171. doi:10.1007/s13399-024-06346-y',
+      url: 'https://link.springer.com/article/10.1007/s13399-024-06346-y',
+      usedFor: 'Pelet alt ısıl değeri ≥ 16,5 MJ/kg (ENplus A1).' },
+    { id: 'S12', citation: 'SIST EN 442-1:2015 (EN 442-1:2014), Radiators and convectors — Part 1, önizleme §3.',
+      url: 'https://cdn.standards.iteh.ai/samples/38668/1cb763a966c247a0b7e4e219d150def5/SIST-EN-442-1-2015.pdf',
+      usedFor: 'Radyatör katalog gücü ΔT = 50 K (75/65/20 °C).' },
+    { id: 'S13', citation: 'Global Radiatori, Thermal output according to EN 442 (teknik not).',
+      url: 'https://www.radiatori2000.it/wp-content/uploads/2025/03/Doc_THERMAL-OUTPUT-ACCORDING-TO-EN-442.pdf',
+      usedFor: 'Φ = K·ΔT^n; örnek model n = 1,32266.' },
+    { id: 'S14', citation: 'OpenStax, University Physics Volume 2, §4.5 The Carnot Cycle, Eq. 4.7.',
+      url: 'https://openstax.org/books/university-physics-volume-2/pages/4-5-the-carnot-cycle',
+      usedFor: 'Termodinamiğin 2. yasası: ısı pompası COP sınırı T_h/(T_h − T_c).' },
+    { id: 'S15', citation: 'The Open University, Energy in buildings, §2.4.1–2.4.3.',
+      url: 'https://www.open.edu/openlearn/nature-environment/energy-buildings/content-section-3.4.2',
+      usedFor: 'Φ = H·ΔT; derece-gün formülü Q = H·DG·24/1000.' },
+    { id: 'S16', citation: 'Ö. Ünal, TESKON 2025 (İzmir) bildirisi, Tablo 1: TS 825 2008 ve 2024 iklim bölgelerine göre iller (tesisat.org makalesinde yayımlanan tablo).',
+      url: 'https://www.tesisat.org/ts-825-2008-ve-2024-standartlarina-gore-u-degerleri-ve-yalitim-kalinligi-karsilastirmasi.html',
+      usedFor: '81 ilin TS 825:2024 iklim bölgesi (il bazında; standart ilçe bazında ayırır).' },
+  ],
+};
+
+</script>
+  <script>
+/*
+ * heatcalc.js — Space-heating load and annual energy engine.
+ *
+ * Pure functions, no DOM access. Every constant comes from data.js (HEAT_DATA),
+ * where each value carries its source id.
+ *
+ * Method
+ *   Heat loss coefficient (TS 825, eq. 10–12, 14):
+ *     H_T = Σ b·U·A               b = 0.8 ceiling under unheated roof, 0.5 ground floor
+ *     H_V = 0.33 · n · V_h         V_h = 0.8 · V_gross
+ *     H   = H_T + H_V              [W/K]
+ *   Annual heating need — TS 825 monthly method (eq. 8, 9, 15–20):
+ *     Q_m = [H(θi − θe,m) − η_m(φi + φs,m)] · t        (only months where bracket > 0)
+ *     φi  = 5 W/m² · A_n,  A_n = 0.32 · V_gross
+ *     φs  = Σ r · g · I_m · A_window,  g = F_w · g⊥
+ *     KKO = (φi + φs) / [H(θi − θe)],  η = 1 − e^(−1/KKO),  KKO ≥ 2.5 → no heating
+ *   Design heat load:  Φ = H · (θi − θe,design)
+ *   Delivered energy:  E = Q / η_system;  fuel = E / heating value
+ *   Radiators (EN 442): Φ_50 = Φ / (ΔT/50)^n,  ΔT = (t_flow + t_return)/2 − θi
+ *   Second law (heat pump): COP_Carnot = T_h / (T_h − T_c)
+ */
+(function (root) {
+  'use strict';
+
+  const HOURS_PER_MONTH = 30 * 24; // TS 825: t = 86400 × 30 s per month
+
+  function byId(list, id, what) {
+    const item = list.find(x => x.id === id);
+    if (!item) throw new Error(`Unknown ${what}: ${id}`);
+    return item;
+  }
+
+  /** Envelope areas from floor area, assuming a square plan. */
+  function envelopeGeometry(inp, data) {
+    const side = Math.sqrt(inp.floorArea);
+    const perimeter = 4 * side;
+    const exposedWallGross = perimeter * inp.height * (inp.exposedFacades / 4);
+    const windowDefault = data.assumptions.windowToFloorRatio * inp.floorArea;
+    const windowWanted = inp.windowArea > 0 ? inp.windowArea : windowDefault;
+    const window = Math.min(windowWanted, 0.9 * exposedWallGross);
+    const grossVolume = inp.floorArea * inp.height;
+    return {
+      side, perimeter, exposedWallGross, window,
+      windowClipped: window < windowWanted,
+      wall: exposedWallGross - window,
+      roof: inp.floorArea,
+      floor: inp.floorArea,
+      grossVolume,
+      ventVolume: data.constants.netVolumeFactor * grossVolume,
+      usableArea: data.constants.usableAreaFactor * grossVolume,
+    };
+  }
+
+  /** Opaque-element U-values for an insulation level in the given city. */
+  function opaqueUValues(level, city, data) {
+    if (level === 'poor') return { ...data.uValues.poor, basis: data.uValues.poor.basis };
+    if (level === 'medium') return { ...data.uValues.ts825_2008[city.zone2008], basis: `TS 825 (2008) ${city.zone2008}. bölge` };
+    if (level === 'high') return { ...data.uValues.ts825_2024[city.zone2024], basis: `TS 825:2024 ${city.zone2024}. bölge` };
+    throw new Error(`Unknown insulation level: ${level}`);
+  }
+
+  /** Heat loss coefficient H and its parts. */
+  function heatLoss(inp, data, level) {
+    const city = byId(data.cities, inp.cityId, 'city');
+    const dwelling = byId(data.dwellingTypes, inp.dwellingType, 'dwelling type');
+    const win = byId(data.windowTypes, inp.windowType, 'window type');
+    const geo = envelopeGeometry(inp, data);
+    const u = opaqueUValues(level, city, data);
+
+    const elements = [
+      { key: 'wall',   label: 'Dış duvar',       area: geo.wall,   u: u.wall,  b: 1 },
+      { key: 'window', label: 'Pencere',         area: geo.window, u: win.u,   b: 1 },
+      { key: 'roof',   label: 'Tavan / çatı',    area: geo.roof,   u: u.roof,  b: dwelling.bRoof },
+      { key: 'floor',  label: 'Taban / döşeme',  area: geo.floor,  u: u.floor, b: dwelling.bFloor },
+    ].map(e => ({ ...e, h: e.b * e.u * e.area }));
+
+    const hTransmission = elements.reduce((s, e) => s + e.h, 0);
+    const hVentilation = data.constants.airHeatCapacity * win.airChange * geo.ventVolume;
+    return { city, dwelling, win, geo, u, elements, hTransmission, hVentilation, hTotal: hTransmission + hVentilation };
+  }
+
+  /** One month of the TS 825 monthly balance. All powers in W, result in kWh. */
+  function monthBalance(h, indoor, outdoor, internalGain, solarGain) {
+    const loss = h * (indoor - outdoor);
+    const gains = internalGain + solarGain;
+    if (loss <= 0) return { loss, gains, kko: Infinity, eta: 0, kWh: 0 };
+    const kko = gains / loss;
+    if (kko >= 2.5) return { loss, gains, kko, eta: 0, kWh: 0 };
+    const eta = 1 - Math.exp(-1 / kko);
+    const net = loss - eta * gains;
+    return { loss, gains, kko, eta, kWh: Math.max(0, net) * HOURS_PER_MONTH / 1000 };
+  }
+
+  /** Annual heating need by the TS 825 monthly method. */
+  function annualDemand(inp, data, hl) {
+    const shading = byId(data.surroundings, inp.surroundings, 'surroundings').r;
+    const g = data.constants.frameFactor * hl.win.gPerp;
+    const internalGain = data.constants.internalGainPerM2 * hl.geo.usableArea;
+    const temps = data.monthlyOutdoorTemp[hl.city.zone2008];
+    const sol = data.solarIrradiance;
+
+    const months = temps.map((te, m) => {
+      // Windows assumed evenly split over south, north, east and west
+      const iMean = (sol.south[m] + sol.north[m] + 2 * sol.eastWest[m]) / 4;
+      const solarGain = shading * g * iMean * hl.geo.window;
+      return { month: m, outdoor: te, internalGain, solarGain,
+               ...monthBalance(hl.hTotal, inp.indoorTemp, te, internalGain, solarGain) };
+    });
+    return { months, total: months.reduce((s, x) => s + x.kWh, 0), g, shading, internalGain };
+  }
+
+  /** SAP 10.2 Table 1b: assumed occupancy from total floor area. */
+  function sapOccupancy(floorArea) {
+    if (floorArea <= 13.9) return 1;
+    const x = floorArea - 13.9;
+    return 1 + 1.76 * (1 - Math.exp(-0.000349 * x * x)) + 0.0013 * x;
+  }
+
+  /**
+   * Domestic hot water (bathroom + kitchen taps) — SAP 10.2 Appendix J.
+   *   showers/day: 0.45N+0.65 (with bath) | 0.58N+0.83 (no bath); flow × minutes × f_beh at 41 °C
+   *   baths/day:   0.13N+0.19 (with shower) | 0.35N+0.50 (no shower); 73 L × f_beh at 42 °C
+   *   other (kitchen, basins): 9.8N + 14 L/day at 52 °C × monthly factor
+   *   E = c · V · (T_use − T_cold) ; distribution loss 0.15·E ; instantaneous combi loss 600·f_u·n_m/365
+   */
+  function hotWater(inp, data, city) {
+    const w = data.hotWater;
+    const n = inp.occupants > 0 ? inp.occupants : sapOccupancy(inp.floorArea);
+    const hasShower = inp.bathroom !== 'bath';
+    const hasBath = inp.bathroom !== 'shower';
+    const showersAuto = !hasShower ? 0 : hasBath ? 0.45 * n + 0.65 : 0.58 * n + 0.83;
+    const bathsAuto = !hasBath ? 0 : hasShower ? 0.13 * n + 0.19 : 0.35 * n + 0.50;
+    const showers = inp.showersPerDay > 0 && hasShower ? inp.showersPerDay : showersAuto;
+    const otherLitres = inp.otherLitres > 0 ? inp.otherLitres : 9.8 * n + 14;
+    const cold = w.coldWater[city.zone2008];
+    const kWhPerLitreK = w.specificHeat / 3600; // kJ/(kg·K) → kWh/(L·K), 1 L ≈ 1 kg
+
+    const months = cold.map((tc, m) => {
+      const days = w.daysInMonth[m];
+      const showerL = showers * inp.showerFlow * inp.showerMinutes * w.behaviourFactor[m];
+      const bathL = bathsAuto * w.bathVolume * w.behaviourFactor[m];
+      const otherL = otherLitres * w.monthlyFactor[m];
+      const useKWh = days * kWhPerLitreK * (
+        showerL * (w.showerTemp - tc) + bathL * (w.bathTemp - tc) + otherL * (w.hotTemp - tc));
+      // litres of 52 °C hot water drawn per day
+      const hotLitres = showerL * (w.showerTemp - tc) / (w.hotTemp - tc)
+                      + bathL * (w.bathTemp - tc) / (w.hotTemp - tc) + otherL;
+      const distKWh = w.distributionLoss * useKWh;
+      const solarKWh = (inp.solarFraction || 0) / 100 * (useKWh + distKWh);
+      const fu = hotLitres < 100 ? hotLitres / 100 : 1;
+      const combiLossKWh = w.combiLossPerYear * fu * days / 365;
+      return { month: m, cold: tc, useKWh, distKWh, solarKWh, combiLossKWh, hotLitres };
+    });
+    const sum = k => months.reduce((s, x) => s + x[k], 0);
+
+    // Instantaneous power for simultaneous draw-offs (kombi sizing)
+    const flows = inp.showerFlow + (inp.kitchenSimultaneous ? w.kitchenTapFlow : 0);
+    const instantKW = flows / 60 * w.specificHeatInstant * (inp.useTemp - w.designColdTemp);
+
+    return {
+      occupants: n, occupantsAuto: sapOccupancy(inp.floorArea), hasShower, hasBath,
+      showers, showersAuto, baths: bathsAuto, otherLitres, months,
+      useKWh: sum('useKWh'), distKWh: sum('distKWh'), solarKWh: sum('solarKWh'),
+      combiLossKWh: sum('combiLossKWh'),
+      litresPerDay: sum('hotLitres') / 12,
+      flows, instantKW,
+    };
+  }
+
+  /** Heat the generator must supply for hot water; combi loss only for gas combis. */
+  function hotWaterGeneratorKWh(dhw, fuel) {
+    if (!dhw) return 0;
+    return dhw.useKWh + dhw.distKWh - dhw.solarKWh + (fuel.isCombi ? dhw.combiLossKWh : 0);
+  }
+
+  function fuelUse(annualKWh, fuel, efficiency, price, dhwKWh = 0, dhwEfficiency = efficiency) {
+    const deliveredHeating = annualKWh / efficiency;
+    const deliveredDhw = dhwKWh / dhwEfficiency;
+    const delivered = deliveredHeating + deliveredDhw;
+    const quantity = delivered / fuel.kWhPerUnit;
+    const cost = price > 0 ? quantity * price : null;
+    return { delivered, deliveredHeating, deliveredDhw, quantity, cost };
+  }
+
+  /**
+   * Full calculation.
+   * @param {object} inp  see app.js readInput()
+   * @param {object} data HEAT_DATA
+   */
+  function calculate(inp, data) {
+    const hl = heatLoss(inp, data, inp.insulation);
+    const demand = annualDemand(inp, data, hl);
+    const fuel = byId(data.fuels, inp.fuelId, 'fuel');
+    const efficiency = inp.efficiency > 0 ? inp.efficiency : fuel.efficiency;
+    const prices = inp.prices || {};
+    const dhw = inp.includeHotWater ? hotWater(inp, data, hl.city) : null;
+    const dhwEffFor = (f, eff) => (f.id === fuel.id && inp.dhwEfficiency > 0 ? inp.dhwEfficiency : eff);
+    const dhwKWh = hotWaterGeneratorKWh(dhw, fuel);
+    const dhwEfficiency = dhwEffFor(fuel, efficiency);
+    const use = fuelUse(demand.total, fuel, efficiency, prices[fuel.id] || 0, dhwKWh, dhwEfficiency);
+
+    // Design load (boiler / heat pump size)
+    const deltaDesign = inp.indoorTemp - hl.city.designTemp;
+    const designLoadW = hl.hTotal * deltaDesign * (1 + (inp.safetyMargin || 0) / 100);
+
+    // Cross-check: MGM degree-days (18 °C base, no gains)
+    const degreeDayKWh = hl.hTotal * hl.city.hdd * 24 / 1000;
+
+    // Radiators
+    const flow = inp.radiatorFlow, ret = inp.radiatorReturn;
+    const deltaRad = (flow + ret) / 2 - inp.indoorTemp;
+    const radCorrection = deltaRad > 0 ? Math.pow(deltaRad / data.radiator.nominalDelta, inp.radiatorExponent) : NaN;
+    const radiatorNominalW = designLoadW / radCorrection;
+    const radiatorLength = inp.radiatorWPerM > 0 ? radiatorNominalW / inp.radiatorWPerM : null;
+
+    // Second law limit for a heat pump
+    let carnotCop = null;
+    if (fuel.isHeatPump) {
+      const tHot = flow + 273.15;
+      const tCold = hl.city.designTemp + 273.15;
+      carnotCop = tHot / (tHot - tCold);
+    }
+
+    // Same heat need, every energy source (default efficiencies)
+    const comparison = data.fuels.map(f => {
+      const eff = f.id === fuel.id ? efficiency : f.efficiency;
+      return { fuel: f, efficiency: eff,
+               ...fuelUse(demand.total, f, eff, prices[f.id] || 0, hotWaterGeneratorKWh(dhw, f), dhwEffFor(f, eff)) };
+    });
+
+    // Same house, every insulation level (windows unchanged)
+    const insulationCompare = ['poor', 'medium', 'high'].map(level => {
+      const h = level === inp.insulation ? hl : heatLoss(inp, data, level);
+      const d = level === inp.insulation ? demand : annualDemand(inp, data, h);
+      return { level, hTotal: h.hTotal, demand: d.total,
+               ...fuelUse(d.total, fuel, efficiency, prices[fuel.id] || 0, dhwKWh, dhwEfficiency),
+               designLoadW: h.hTotal * deltaDesign * (1 + (inp.safetyMargin || 0) / 100) };
+    });
+    const best = insulationCompare.find(x => x.level === 'high');
+    const savingKWh = use.delivered - best.delivered;
+    const savingCost = use.cost !== null ? use.cost - best.cost : null;
+    const paybackYears = savingCost > 0 && inp.insulationCost > 0 ? inp.insulationCost / savingCost : null;
+
+    const limit = data.energyLimits2024[hl.dwelling.limitType][hl.city.zone2024 - 1];
+
+    // Kombi (instantaneous) must cover the larger of space heating and hot-water draw-off
+    const hotWaterPowerW = dhw ? dhw.instantKW * 1000 : 0;
+    const recommendedW = fuel.isCombi ? Math.max(designLoadW, hotWaterPowerW) : designLoadW;
+
+    return {
+      ...hl, demand, fuel, efficiency, ...use,
+      dhw, dhwKWh, dhwEfficiency, hotWaterPowerW, recommendedW,
+      annualDemandKWh: demand.total,
+      specificDemand: demand.total / inp.floorArea,
+      deltaDesign, designLoadW, degreeDayKWh,
+      radiator: { flow, ret, deltaRad, radCorrection, radiatorNominalW, radiatorLength },
+      carnotCop, comparison, insulationCompare,
+      upgrade: { savingKWh, savingCost, paybackYears },
+      limit,
+    };
+  }
+
+  const api = { calculate, envelopeGeometry, heatLoss, annualDemand, monthBalance, sapOccupancy, hotWater };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.HeatCalc = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+  <script>
+/* app.js — UI wiring. Turkish labels, English code. */
+(function () {
+  'use strict';
+
+  const D = window.HEAT_DATA;
+  const $ = id => document.getElementById(id);
+  const STORE_KEY = 'isitma-hesabi-v1';
+  const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+  const LEVEL_LABEL = { poor: 'Zayıf', medium: 'Orta', high: 'Yüksek' };
+
+  let prices = {};
+  let lastResult = null;
+
+  const nf = (v, digits = 0) =>
+    Number(v).toLocaleString('tr-TR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ---------- storage (per-device convenience only) ---------- */
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || null; } catch (e) { return null; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* private mode */ }
+  }
+
+  /* ---------- form helpers ---------- */
+  function fillSelect(select, items, selectedId) {
+    select.innerHTML = items.map(it =>
+      `<option value="${esc(it.id)}"${it.id === selectedId ? ' selected' : ''}>${esc(it.label)}</option>`).join('');
+  }
+  const checked = name => (document.querySelector(`input[name="${name}"]:checked`) || {}).value;
+  function setRadio(name, value) {
+    const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+    if (el) el.checked = true;
+  }
+  const num = id => parseFloat(String($(id).value).replace(',', '.'));
+
+  function currentFuel() { return D.fuels.find(f => f.id === $('fuel').value); }
+
+  function refreshFuelList(keepId) {
+    const items = D.fuels.filter(f => f.group === checked('source'));
+    const keep = items.some(f => f.id === keepId) ? keepId : items[0].id;
+    fillSelect($('fuel'), items, keep);
+    onFuelChanged();
+  }
+
+  function onFuelChanged() {
+    const f = currentFuel();
+    $('priceLabel').textContent = `Birim fiyat — 1 ${f.unit} kaç TL? (isteğe bağlı)`;
+    $('priceUnit').textContent = `TL/${f.unit}`;
+    $('unitPrice').value = prices[f.id] > 0 ? prices[f.id] : '';
+    if (f.isHeatPump) {
+      $('efficiencyLabel').textContent = 'Isı pompası mevsimsel COP (SCOP)';
+      $('efficiencyUnit').textContent = '';
+      $('efficiency').value = f.efficiency;
+      $('efficiency').step = '0.05';
+      $('efficiencyHint').textContent = 'Varsayılan 2,75: AB\'nin izin verdiği en düşük değer. Cihaz etiketindeki SCOP\'u girebilirsiniz.';
+      if (['90-70', '80-60', '75-65'].includes($('radiatorRegime').value)) $('radiatorRegime').value = '45-35';
+    } else {
+      $('efficiencyLabel').textContent = 'Sistem verimi';
+      $('efficiencyUnit').textContent = '%';
+      $('efficiency').value = Math.round(f.efficiency * 100);
+      $('efficiency').step = '1';
+      $('efficiencyHint').textContent = f.id === 'electric'
+        ? 'Elektrik enerjisinin tamamı ısıya dönüşür (1. yasa).'
+        : 'Varsayılan: yeni cihazlar için izin verilen en düşük mevsimsel verim. Eski cihazlarda daha düşüktür.';
+    }
+  }
+
+  function renderWindowChoices(selected) {
+    $('windowChoices').innerHTML = D.windowTypes.map(w => {
+      const [title, sub] = w.label.split(' (');
+      return `<label class="choice"><input type="radio" name="windowType" value="${w.id}"${w.id === selected ? ' checked' : ''}>` +
+             `<span><b>${esc(title)}</b>${sub ? `<small>${esc(sub.replace(')', ''))}</small>` : ''}</span></label>`;
+    }).join('');
+  }
+
+  function applyState(s) {
+    $('floorArea').value = s.floorArea;
+    $('height').value = s.height;
+    fillSelect($('city'), D.cities, s.cityId);
+    fillSelect($('dwellingType'), D.dwellingTypes, s.dwellingType);
+    $('exposedFacades').value = String(s.exposedFacades);
+    setRadio('insulation', s.insulation);
+    renderWindowChoices(s.windowType);
+    fillSelect($('surroundings'), D.surroundings, s.surroundings);
+    $('indoorTemp').value = s.indoorTemp;
+    $('windowArea').value = s.windowArea > 0 ? s.windowArea : '';
+    fillSelect($('radiatorRegime'), D.radiatorRegimes, s.radiatorRegime);
+    $('radiatorExponent').value = s.radiatorExponent;
+    $('radiatorWPerM').value = s.radiatorWPerM > 0 ? s.radiatorWPerM : '';
+    $('safetyMargin').value = s.safetyMargin;
+    $('insulationCost').value = s.insulationCost > 0 ? s.insulationCost : '';
+    prices = { ...(s.prices || {}) };
+    setRadio('source', s.source);
+    refreshFuelList(s.fuelId);
+    if (s.efficiencyInput > 0) $('efficiency').value = s.efficiencyInput;
+  }
+
+  function defaultState() {
+    const d = D.defaults;
+    const dw = D.dwellingTypes.find(x => x.id === d.dwellingType);
+    return { ...d, exposedFacades: dw.facades, windowArea: 0, radiatorExponent: D.radiator.defaultExponent,
+             radiatorWPerM: 0, insulationCost: 0, prices: {}, efficiencyInput: 0 };
+  }
+
+  function readState() {
+    return {
+      floorArea: num('floorArea'), height: num('height'), cityId: $('city').value,
+      dwellingType: $('dwellingType').value, exposedFacades: parseInt($('exposedFacades').value, 10),
+      insulation: checked('insulation'), windowType: checked('windowType'),
+      surroundings: $('surroundings').value, indoorTemp: num('indoorTemp'),
+      windowArea: num('windowArea') || 0, source: checked('source'), fuelId: $('fuel').value,
+      radiatorRegime: $('radiatorRegime').value, radiatorExponent: num('radiatorExponent'),
+      radiatorWPerM: num('radiatorWPerM') || 0, safetyMargin: num('safetyMargin') || 0,
+      insulationCost: num('insulationCost') || 0, prices: { ...prices },
+      efficiencyInput: num('efficiency') || 0,
+    };
+  }
+
+  function toCalcInput(s) {
+    const f = D.fuels.find(x => x.id === s.fuelId);
+    const regime = D.radiatorRegimes.find(r => r.id === s.radiatorRegime);
+    const eff = s.efficiencyInput > 0 ? (f.isHeatPump ? s.efficiencyInput : s.efficiencyInput / 100) : 0;
+    return { ...s, includeHotWater: false, efficiency: eff, radiatorFlow: regime.flow, radiatorReturn: regime.ret };
+  }
+
+  function validate(s) {
+    if (!(s.floorArea >= 20 && s.floorArea <= 1000)) return 'Isıtılacak alan 20 ile 1000 m² arasında olmalı.';
+    if (!(s.height >= 2.2 && s.height <= 5)) return 'Tavan yüksekliği 2,2 ile 5 m arasında olmalı.';
+    if (!(s.indoorTemp >= 16 && s.indoorTemp <= 24)) return 'Oda sıcaklığı 16 ile 24 °C arasında olmalı.';
+    if (!(s.radiatorExponent >= 1 && s.radiatorExponent <= 1.6)) return 'Radyatör üssü 1,0 ile 1,6 arasında olmalı.';
+    const f = D.fuels.find(x => x.id === s.fuelId);
+    if (f.isHeatPump && !(s.efficiencyInput >= 1 && s.efficiencyInput <= 6)) return 'SCOP 1 ile 6 arasında olmalı.';
+    if (!f.isHeatPump && !(s.efficiencyInput >= 10 && s.efficiencyInput <= 110)) return 'Sistem verimi %10 ile %110 arasında olmalı.';
+    return null;
+  }
+
+  /* ---------- rendering ---------- */
+  function render() {
+    const s = readState();
+    saveState(s);
+    const d = D.cities.find(c => c.id === s.cityId);
+    $('cityHint').textContent = `TS 825 iklim bölgesi: ${d.zone2024}. bölge (2024) · tasarım dış sıcaklığı ${nf(d.designTemp)} °C`;
+    $('insulationHint').textContent = D.insulationLevels[s.insulation].hint;
+    $('windowHint').textContent = D.windowTypes.find(w => w.id === s.windowType).hint;
+    document.querySelectorAll('.chips button').forEach(b =>
+      b.classList.toggle('active', parseFloat(b.dataset.value) === s.floorArea));
+
+    const err = validate(s);
+    $('error').hidden = !err;
+    $('error').textContent = err || '';
+    if (err) { $('sbValue').textContent = '–'; return; }
+
+    const r = HeatCalc.calculate(toCalcInput(s), D);
+    lastResult = { s, r };
+    const f = r.fuel;
+
+    // KPIs
+    $('outFuel').textContent = f.unit === 'kWh'
+      ? `${nf(r.quantity)} kWh elektrik`
+      : `${nf(r.quantity, f.unitDigits)} ${f.unit}`;
+    $('outDelivered').textContent = `${f.label} · ${f.unit === 'kWh' ? 'yılda' : `yılda (${nf(r.delivered)} kWh enerji)`}`;
+    $('outCost').textContent = r.cost !== null ? `≈ ${nf(r.cost)} TL / yıl  ·  ≈ ${nf(r.cost / 12)} TL / ay ortalama` : 'Maliyet için birim fiyat girin.';
+    $('outLoad').textContent = `${nf(r.designLoadW / 1000, 1)} kW`;
+    $('outDemand').textContent = `${nf(r.annualDemandKWh)} kWh`;
+    $('outSpecific').textContent = `${nf(r.specificDemand, 1)} kWh/m² yıl`;
+    $('outRadiator').textContent = `${nf(r.radiator.radiatorNominalW / 1000, 1)} kW`;
+    $('outRadiatorSub').textContent = r.radiator.radiatorLength
+      ? `katalog (ΔT50) gücü · ≈ ${nf(r.radiator.radiatorLength, 1)} m radyatör`
+      : `katalogdaki ΔT50 değeriyle · ${r.radiator.flow}/${r.radiator.ret} °C suyla`;
+    $('outH').textContent = `${nf(r.hTotal)} W/K`;
+    $('sbValue').textContent = $('outFuel').textContent + (r.cost !== null ? ` · ${nf(r.cost)} TL` : '');
+
+    const limitOk = r.specificDemand <= r.limit;
+    $('outLimit').className = 'note' + (limitOk ? ' good' : '');
+    $('outLimit').textContent = `Karşılaştırma: TS 825:2024 yeni ${r.dwelling.limitType === 'detached' ? 'müstakil konutlar' : 'apartmanlar'} için ` +
+      `${r.city.zone2024}. bölgede ısıtma + soğutma ihtiyacına ${r.limit} kWh/m² yıl sınırı koyuyor. ` +
+      `Bu evin yalnız ısıtma ihtiyacı ${nf(r.specificDemand, 1)} kWh/m² yıl` + (limitOk ? ' — sınırın altında.' : ' — sınırın üstünde.');
+
+    $('outCarnot').textContent = r.carnotCop !== null
+      ? `Termodinamiğin 2. yasası: ${r.radiator.flow} °C su ve ${nf(r.city.designTemp)} °C dış havada hiçbir ısı pompası ` +
+        `COP = T_sıcak/(T_sıcak − T_soğuk) = ${nf(r.carnotCop, 1)} değerini aşamaz. Hesapta mevsimsel COP ${nf(r.efficiency, 2)} kullanıldı.`
+      : '';
+
+    renderLossBars(r);
+    renderMonths(r);
+    renderFuelTable(r);
+    renderInsulationTable(s, r);
+    renderSteps(s, r);
+  }
+
+  function renderLossBars(r) {
+    const parts = r.elements.filter(e => e.h > 0).map(e => ({ label: e.label, h: e.h }));
+    parts.push({ label: 'Hava değişimi', h: r.hVentilation });
+    parts.sort((a, b) => b.h - a.h);
+    const max = parts[0].h;
+    $('lossBars').innerHTML = parts.map(p => {
+      const pct = 100 * p.h / r.hTotal;
+      return `<div class="hbar" title="${esc(p.label)}: ${nf(p.h, 1)} W/K"><span>${esc(p.label)}</span>` +
+        `<span class="hbar-track"><span class="hbar-fill" style="width:${(100 * p.h / max).toFixed(1)}%;display:block"></span></span>` +
+        `<span class="hbar-val">%${nf(pct)}</span></div>`;
+    }).join('');
+  }
+
+  function renderMonths(r) {
+    const months = r.demand.months;
+    const dhwM = i => (r.dhw ? r.dhw.months[i].useKWh + r.dhw.months[i].distKWh - r.dhw.months[i].solarKWh : 0);
+    const totals = months.map(m => m.kWh + dhwM(m.month));
+    const max = Math.max(...totals, 1);
+    const peakIdx = totals.indexOf(Math.max(...totals));
+    $('monthChart').setAttribute('aria-label',
+      `Aylık ısı ihtiyacı; en yüksek ${MONTHS[peakIdx]}: ${nf(totals[peakIdx])} kWh`);
+    $('monthChart').innerHTML = months.map(m => {
+      const t = totals[m.month];
+      const ht = 100 * t / max;
+      const shareHeat = t > 0 ? 100 * m.kWh / t : 0;
+      const top = m.month === peakIdx ? `<span class="vbar-top" style="bottom:calc(${ht.toFixed(1)}% + 2px);top:auto">${nf(t)}</span>` : '';
+      const tip = r.dhw
+        ? `${MONTHS[m.month]}: ısıtma ${nf(m.kWh)} + sıcak su ${nf(dhwM(m.month))} kWh`
+        : `${MONTHS[m.month]}: ${nf(m.kWh)} kWh`;
+      return `<div class="vbar" tabindex="0"><span class="vbar-tip">${tip}</span>` +
+        `<span class="vbar-plot">${top}<span class="vbar-stack" style="height:${ht.toFixed(1)}%">` +
+        (m.kWh > 0 ? `<span class="vbar-fill" style="height:${shareHeat.toFixed(1)}%"></span>` : '') +
+        (r.dhw ? `<span class="vbar-fill dhw" style="height:${(100 - shareHeat).toFixed(1)}%"></span>` : '') +
+        `</span></span><span class="vbar-lbl">${MONTHS[m.month]}</span></div>`;
+    }).join('');
+    $('monthChart').querySelectorAll('.vbar').forEach(el =>
+      el.addEventListener('click', () => {
+        $('monthChart').querySelectorAll('.vbar.show').forEach(x => x !== el && x.classList.remove('show'));
+        el.classList.toggle('show');
+      }));
+    const dhwTotal = months.reduce((a, m) => a + dhwM(m.month), 0);
+    $('monthTable').innerHTML = `<div class="table-wrap"><table><tr><th>Ay</th><th>Dış °C</th><th>Kayıp (W)</th><th>Kazanç (W)</th><th>η</th><th>Isıtma kWh</th>` +
+      (r.dhw ? '<th>Şebeke suyu °C</th><th>Sıcak su kWh</th>' : '') + '</tr>' +
+      months.map(m => `<tr><td>${MONTHS[m.month]}</td><td>${nf(m.outdoor, 1)}</td><td>${nf(Math.max(m.loss, 0))}</td>` +
+        `<td>${nf(m.gains)}</td><td>${nf(m.eta, 2)}</td><td>${nf(m.kWh)}</td>` +
+        (r.dhw ? `<td>${nf(r.dhw.months[m.month].cold, 1)}</td><td>${nf(dhwM(m.month))}</td>` : '') + '</tr>').join('') +
+      `<tr><th>Toplam</th><td></td><td></td><td></td><td></td><th>${nf(r.annualDemandKWh)}</th>` +
+      (r.dhw ? `<td></td><th>${nf(dhwTotal)}</th>` : '') + '</tr></table></div>';
+  }
+
+  function renderFuelTable(r) {
+    const rows = r.comparison.map(c => {
+      const f = c.fuel;
+      const effText = f.isHeatPump ? `COP ${nf(c.efficiency, 2)}` : `%${nf(c.efficiency * 100)}`;
+      return `<tr class="${f.id === r.fuel.id ? 'current' : ''}"><td>${esc(f.label)}<br><small>${effText}</small></td>` +
+        `<td>${nf(c.quantity, f.unitDigits)} ${f.unit}</td>` +
+        `<td><input type="number" inputmode="decimal" min="0" step="0.01" data-fuel="${f.id}" value="${prices[f.id] > 0 ? prices[f.id] : ''}" aria-label="${esc(f.label)} birim fiyatı, TL/${f.unit}" placeholder="TL/${f.unit}"></td>` +
+        `<td>${c.cost !== null ? nf(c.cost) + ' TL' : '–'}</td></tr>`;
+    }).join('');
+    $('fuelTable').innerHTML = `<table><tr><th>Cihaz / yakıt</th><th>Yıllık miktar</th><th>Birim fiyat</th><th>Yıllık maliyet</th></tr>${rows}</table>`;
+  }
+
+  function renderInsulationTable(s, r) {
+    const rows = r.insulationCompare.map(x =>
+      `<tr class="${x.level === s.insulation ? 'current' : ''}"><td>${LEVEL_LABEL[x.level]}</td>` +
+      `<td>${nf(x.designLoadW / 1000, 1)} kW</td><td>${nf(x.demand)} kWh</td>` +
+      `<td>${nf(x.quantity, r.fuel.unitDigits)} ${r.fuel.unit}</td><td>${x.cost !== null ? nf(x.cost) + ' TL' : '–'}</td></tr>`).join('');
+    $('insulationTable').innerHTML = `<table><tr><th>Yalıtım</th><th>Kombi gücü</th><th>Isı ihtiyacı</th><th>Tüketim</th><th>Maliyet</th></tr>${rows}</table>`;
+
+    const u = r.upgrade;
+    let text;
+    if (s.insulation === 'high') text = 'Eviniz zaten en yüksek yalıtım düzeyinde.';
+    else {
+      text = `Yüksek yalıtıma geçilirse yılda ≈ ${nf(u.savingKWh)} kWh daha az enerji harcanır` +
+        (u.savingCost !== null ? ` (≈ ${nf(u.savingCost)} TL/yıl)` : '') + '.';
+      if (u.paybackYears !== null) text += ` Girdiğiniz yatırım maliyetiyle kendini ≈ ${nf(u.paybackYears, 1)} yılda öder (faizsiz, sabit fiyatla).`;
+      else if (u.savingCost !== null) text += ' Geri ödeme süresi için "Gelişmiş ayarlar"a yalıtım maliyetini girin.';
+    }
+    $('upgradeNote').textContent = text + ' Pencereler aynı kabul edildi.';
+  }
+
+  function renderSteps(s, r) {
+    const g = r.geo;
+    const rows = r.elements.map(e =>
+      `<tr><td>${e.label}</td><td>${nf(e.area, 1)}</td><td>${nf(e.u, 3)}</td><td>${nf(e.b, 1)}</td><td>${nf(e.h, 1)}</td></tr>`).join('');
+    const jan = r.demand.months[0];
+    const eff = r.fuel.isHeatPump ? `COP ${nf(r.efficiency, 2)}` : nf(r.efficiency, 2);
+
+    $('steps').innerHTML = `
+      <h3>1. Geometri (kare plan)</h3>
+      <div class="eq">Kenar = √${nf(s.floorArea)} = ${nf(g.side, 2)} m
+Dış duvar (brüt) = 4 × ${nf(g.side, 2)} × ${nf(s.height, 2)} × ${s.exposedFacades}/4 = ${nf(g.exposedWallGross, 1)} m²
+Pencere = ${nf(g.window, 1)} m²${g.windowClipped ? ' (duvar alanıyla sınırlandı)' : ''}
+Brüt hacim V = ${nf(s.floorArea)} × ${nf(s.height, 2)} = ${nf(g.grossVolume, 1)} m³</div>
+
+      <h3>2. İletimle ısı kaybı — Fourier yasası, kararlı rejim</h3>
+      <div class="eq">H_T = Σ b·U·A        (U: ${esc(r.u.basis)})</div>
+      <div class="table-wrap"><table>
+        <tr><th>Yüzey</th><th>A (m²)</th><th>U (W/m²K)</th><th>b</th><th>b·U·A (W/K)</th></tr>${rows}
+        <tr><th>H_T</th><td></td><td></td><td></td><th>${nf(r.hTransmission, 1)}</th></tr>
+      </table></div>
+
+      <h3>3. Hava değişimiyle ısı kaybı — 1. yasa: Q̇ = ṁ·c_p·ΔT</h3>
+      <div class="eq">H_V = ρc_p · n · 0,8·V
+    = ${nf(D.constants.airHeatCapacity, 2)} × ${nf(r.win.airChange, 1)} × ${nf(g.ventVolume, 1)} = ${nf(r.hVentilation, 1)} W/K</div>
+
+      <h3>4. Toplam ısı kaybı katsayısı</h3>
+      <div class="eq">H = H_T + H_V = ${nf(r.hTransmission, 1)} + ${nf(r.hVentilation, 1)} = ${nf(r.hTotal, 1)} W/K</div>
+
+      <h3>5. Kombi / kazan gücü (tasarım ısı yükü)</h3>
+      <div class="eq">Φ = H · (θ_iç − θ_dış) · (1 + emniyet)
+  = ${nf(r.hTotal, 1)} × (${nf(s.indoorTemp, 1)} − (${nf(r.city.designTemp)})) × ${nf(1 + s.safetyMargin / 100, 2)} = ${nf(r.designLoadW)} W</div>
+
+      <h3>6. Yıllık ısı ihtiyacı — TS 825 aylık yöntemi</h3>
+      <div class="eq">Q_ay = [H·(θ_iç − θ_dış,ay) − η_ay·(φ_iç + φ_güneş,ay)] · 720 h
+φ_iç = 5 W/m² × 0,32·V = ${nf(r.demand.internalGain)} W
+φ_güneş = r · g · I_ay · A_pencere      (r = ${nf(r.demand.shading, 1)}, g = 0,8 × ${nf(r.win.gPerp, 2)} = ${nf(r.demand.g, 2)})
+KKO = (φ_iç + φ_güneş) / [H·ΔT],   η = 1 − e^(−1/KKO)
+
+Ocak: θ_dış = ${nf(jan.outdoor, 1)} °C → kayıp ${nf(jan.loss)} W, kazanç ${nf(jan.gains)} W,
+      KKO = ${nf(jan.kko, 3)}, η = ${nf(jan.eta, 3)} → ${nf(jan.kWh)} kWh
+Yıl toplamı = ${nf(r.annualDemandKWh)} kWh  (${r.city.zone2008}. bölge aylık sıcaklıkları, TS 825 Ek B.2)</div>
+
+      <h3>7. Tüketilecek enerji ve yakıt</h3>
+      <div class="eq">E_ısıtma = Q / η_sistem = ${nf(r.annualDemandKWh)} / ${eff} = ${nf(r.deliveredHeating)} kWh${r.dhw ? `
+E_toplam = E_ısıtma + E_sıcak su = ${nf(r.deliveredHeating)} + ${nf(r.deliveredDhw)} = ${nf(r.delivered)} kWh` : ''}
+Yakıt = E / ısıl değer = ${nf(r.delivered)} / ${nf(r.fuel.kWhPerUnit, 3)} kWh/${r.fuel.unit} = ${nf(r.quantity, r.fuel.unitDigits)} ${r.fuel.unit}</div>
+
+      <h3>8. Radyatör (EN 442)</h3>
+      <div class="eq">ΔT = (${r.radiator.flow} + ${r.radiator.ret})/2 − ${nf(s.indoorTemp, 1)} = ${nf(r.radiator.deltaRad, 1)} K
+Φ_katalog = Φ / (ΔT/50)^n = ${nf(r.designLoadW)} / (${nf(r.radiator.deltaRad, 1)}/50)^${nf(s.radiatorExponent, 2)} = ${nf(r.radiator.radiatorNominalW)} W</div>
+
+      <h3>9. Kontrol: MGM derece-gün yöntemi</h3>
+      <div class="eq">Q ≈ H · DG · 24 / 1000 = ${nf(r.hTotal, 1)} × ${nf(r.city.hdd)} × 24 / 1000 = ${nf(r.degreeDayKWh)} kWh
+(DG: ${esc(r.city.label)}, MGM 2023–2025 ortalaması, 18 °C taban, kazançlar düşülmez.
+ TS 825 sonucundan farkı: %${nf(100 * (r.degreeDayKWh / r.annualDemandKWh - 1))})</div>
+    ` + renderDhwSteps(s, r);
+  }
+
+  function renderDhwSteps(s, r) {
+    const d = r.dhw;
+    if (!d) return '';
+    const w = D.hotWater;
+    const jan = d.months[0];
+    const effDhw = r.fuel.isHeatPump ? `COP ${nf(r.dhwEfficiency, 2)}` : nf(r.dhwEfficiency, 2);
+    const perPerson60 = d.litresPerDay * (w.hotTemp - w.designColdTemp) / (60 - w.designColdTemp) / d.occupants;
+    const kombiLine = r.fuel.isCombi
+      ? `Önerilen kombi = en büyük(oda ısıtması ${nf(r.designLoadW / 1000, 1)} kW, sıcak su ${nf(d.instantKW, 1)} kW) = ${nf(r.recommendedW / 1000, 1)} kW`
+      : 'Kombi değil: sıcak su boylerde depolanarak hazırlanır, cihaz gücü oda ısıtmasına göre seçilir.';
+    return `
+      <h3>10. Sıcak su — 1. yasa: Q = m·c·ΔT (SAP 10.2 Ek J)</h3>
+      <div class="eq">Kişi sayısı N = ${nf(d.occupants, 2)}${s.occupants > 0 ? ' (girilen)' : ' (SAP: alandan)'}
+Duş/gün = ${nf(d.showers, 2)} × ${nf(s.showerFlow, 1)} L/dk × ${nf(s.showerMinutes)} dk, 41 °C'de
+Küvet/gün = ${nf(d.baths, 2)} × 73 L, 42 °C'de
+Mutfak + lavabo = ${nf(d.otherLitres, 1)} L/gün, 52 °C'de
+
+Ocak (şebeke suyu ${nf(jan.cold, 1)} °C):
+  Q = gün × c × Σ V·(T_kullanım − T_şebeke) = ${nf(jan.useKWh)} kWh
+  Dağıtım kaybı 0,15 × Q = ${nf(jan.distKWh)} kWh
+
+Yıllık: kullanım ${nf(d.useKWh)} + dağıtım ${nf(d.distKWh)}${d.solarKWh > 0 ? ` − güneş ${nf(d.solarKWh)}` : ''}${r.fuel.isCombi ? ` + kombi ek kaybı ${nf(d.combiLossKWh)}` : ''} = ${nf(r.dhwKWh)} kWh
+Tüketim = ${nf(r.dhwKWh)} / ${effDhw} = ${nf(r.deliveredDhw)} kWh
+Günde ≈ ${nf(d.litresPerDay)} L 52 °C su → kişi başı ≈ ${nf(perPerson60)} L (60 °C'ye çevrilmiş)
+(Karşılaştırma: DemirDöküm kılavuzu kişi başı 30 / 50 / 70 L, 60 °C — düşük / orta / yüksek konfor)</div>
+
+      <h3>11. Kombi için anlık sıcak su gücü</h3>
+      <div class="eq">P = V̇ · c · ΔT = ${nf(d.flows, 1)} L/dk ÷ 60 × ${nf(w.specificHeatInstant, 3)} × (${nf(s.useTemp)} − ${nf(w.designColdTemp)}) = ${nf(d.instantKW, 1)} kW
+${kombiLine}</div>`;
+  }
+
+  function renderSources() {
+    const items = D.sources.map(s =>
+      `<li><strong>${s.id}.</strong> ${esc(s.citation)} — <a href="${esc(s.url)}" target="_blank" rel="noopener">aç</a>` +
+      `<br><small>${esc(s.usedFor)}</small></li>`).join('');
+    const notes = D.assumptionNotes.map(a => `<li>${esc(a)}</li>`).join('');
+    $('sources').innerHTML = `<h3>Varsayımlar</h3><ul>${notes}</ul><h3>Kaynaklar</h3><ul>${items}</ul>`;
+    $('version').textContent = `Sürüm ${D.version}.`;
+  }
+
+  /* ---------- actions ---------- */
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => { t.hidden = true; }, 2500);
+  }
+
+  function goToResults() {
+    render();
+    const target = $('results');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const card = target.querySelector('.card');
+    card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash');
+  }
+
+  function summaryText() {
+    if (!lastResult) return '';
+    const { s, r } = lastResult;
+    const city = r.city.label;
+    return [
+      `Isıtma Hesabı — ${nf(s.floorArea)} m², ${city}, ${r.dwelling.label}, yalıtım: ${LEVEL_LABEL[s.insulation]}`,
+      `Kombi/kazan gücü: ${nf(r.designLoadW / 1000, 1)} kW (${nf(r.designLoadW * D.constants.kcalPerWh)} kcal/h)`,
+      `Yıllık ısı ihtiyacı: ${nf(r.annualDemandKWh)} kWh (${nf(r.specificDemand, 1)} kWh/m²)`,
+      `Yıllık tüketim (${r.fuel.label}): ${$('outFuel').textContent}` + (r.cost !== null ? `, ≈ ${nf(r.cost)} TL` : ''),
+      `Radyatör toplam katalog gücü (ΔT50): ${nf(r.radiator.radiatorNominalW / 1000, 1)} kW`,
+    ].join('\n');
+  }
+
+  async function copyText(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Sonuç panoya kopyalandı.');
+    } catch (e) {
+      toast('Kopyalanamadı. Sonuç ekranda görünüyor.');
+    }
+  }
+
+  async function share() {
+    const text = summaryText();
+    if (window.AndroidApp) { window.AndroidApp.share(text); return; }
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Isıtma Hesabı', text }); return; }
+      catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    copyText(text);
+  }
+
+  function printReport() {
+    const opened = [];
+    document.querySelectorAll('details').forEach(d => { if (!d.open) { d.open = true; opened.push(d); } });
+    const restore = () => { opened.forEach(d => { d.open = false; }); window.removeEventListener('afterprint', restore); };
+    if (window.AndroidApp) {
+      window.AndroidApp.print(); // opened sections stay open for the printed report
+      return;
+    }
+    window.addEventListener('afterprint', restore);
+    window.print();
+  }
+
+  function reset() {
+    const btn = $('btnReset');
+    if (!btn.classList.contains('confirming')) {
+      btn.classList.add('confirming');
+      btn.querySelector('span').textContent = 'Emin mi?';
+      toast('Tüm değerler ve fiyatlar silinecek. Onaylamak için Sıfırla\'ya tekrar dokunun.');
+      clearTimeout(reset.timer);
+      reset.timer = setTimeout(() => {
+        btn.classList.remove('confirming');
+        btn.querySelector('span').textContent = 'Sıfırla';
+      }, 4000);
+      return;
+    }
+    clearTimeout(reset.timer);
+    btn.classList.remove('confirming');
+    btn.querySelector('span').textContent = 'Sıfırla';
+    applyState(defaultState());
+    render();
+    toast('Değerler sıfırlandı.');
+  }
+
+  /* ---------- init ---------- */
+  function init() {
+    $('jsWarning').hidden = true;
+    let embedded = false;
+    try { embedded = window.self !== window.top; } catch (e) { embedded = true; }
+    if (embedded) $('btnPrint').hidden = true;
+    const saved = loadState();
+    const base = defaultState();
+    let state = base;
+    if (saved) {
+      state = { ...base, ...saved };
+      if (!D.cities.some(c => c.id === state.cityId)) state.cityId = base.cityId;
+      if (!D.fuels.some(f => f.id === state.fuelId)) state.fuelId = base.fuelId;
+    }
+    applyState(state);
+    renderSources();
+
+    const form = $('inputs');
+    form.addEventListener('input', e => {
+      if (e.target.id === 'unitPrice') {
+        const v = num('unitPrice');
+        prices[$('fuel').value] = v > 0 ? v : 0;
+      }
+      render();
+    });
+    form.addEventListener('change', e => {
+      const t = e.target;
+      if (t.name === 'source') { refreshFuelList(); }
+      else if (t.id === 'fuel') { onFuelChanged(); }
+      else if (t.name === 'insulation') {
+        setRadio('windowType', D.defaultWindowFor[t.value]);
+      } else if (t.id === 'dwellingType') {
+        $('exposedFacades').value = String(D.dwellingTypes.find(x => x.id === t.value).facades);
+      }
+      render();
+    });
+    form.addEventListener('submit', e => e.preventDefault());
+
+    document.querySelectorAll('.step-btn').forEach(b => b.addEventListener('click', () => {
+      const input = $(b.dataset.target);
+      const lo = parseFloat(b.dataset.min || 20), hi = parseFloat(b.dataset.max || 1000);
+      const auto = parseFloat(String(input.placeholder).replace(/[^0-9,]/g, '').replace(',', '.'));
+      const v = input.value === '' ? Math.round(auto || lo) : parseFloat(input.value) + parseFloat(b.dataset.delta);
+      input.value = Math.min(hi, Math.max(lo, v));
+      render();
+    }));
+    document.querySelectorAll('.chips button').forEach(b => b.addEventListener('click', () => {
+      $(b.parentElement.dataset.target).value = b.dataset.value;
+      render();
+    }));
+
+    // Price inputs inside the comparison table
+    $('fuelTable').addEventListener('change', e => {
+      const id = e.target.dataset.fuel;
+      if (!id) return;
+      const v = parseFloat(String(e.target.value).replace(',', '.'));
+      prices[id] = v > 0 ? v : 0;
+      if (id === $('fuel').value) $('unitPrice').value = v > 0 ? v : '';
+      render();
+    });
+
+    $('btnCalc').addEventListener('click', goToResults);
+    $('btnGoResults').addEventListener('click', goToResults);
+    $('btnPrint').addEventListener('click', printReport);
+    $('btnShare').addEventListener('click', share);
+    $('btnReset').addEventListener('click', reset);
+
+    render();
+
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  }
+
+  window.addEventListener('error', e => {
+    const w = document.getElementById('jsWarning');
+    if (!w) return;
+    w.hidden = false;
+    document.getElementById('jsWarningDetail').textContent = ` (Hata: ${e.message})`;
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    try { init(); } catch (e) {
+      document.getElementById('jsWarning').hidden = false;
+      document.getElementById('jsWarningDetail').textContent = ` (Hata: ${e.message})`;
+    }
+  });
+})();
+
+</script>
+</body>
+</html>
